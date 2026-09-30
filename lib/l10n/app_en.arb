@@ -1,0 +1,422 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "CatetKeun",
+
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "done": "Done",
+  "continueBtn": "Continue",
+  "close": "Close",
+
+  "income": "Income",
+  "expense": "Expense",
+  "incomeShort": "In",
+  "expenseShort": "Out",
+
+  "previousMonth": "Previous month",
+  "nextMonth": "Next month",
+
+  "today": "Today",
+  "yesterday": "Yesterday",
+
+  "searchTitle": "Search Transactions",
+  "closeSearchTitle": "Close Search",
+  "searchHint": "Search transactions...",
+  "moreMenu": "More options",
+  "manageBudgetMenu": "Manage Budget",
+  "manageCategoryMenu": "Manage Categories",
+  "exportImportMenu": "Export/Import Data",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+
+  "navTransactions": "Transactions",
+  "navStatistics": "Statistics",
+  "navAbout": "About",
+  "addTransaction": "Add Transaction",
+  "transactionHistory": "Transaction History",
+  "transactionCount": "{count} transactions",
+  "@transactionCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "emptyTransactionsTitle": "No Transactions Yet",
+  "emptySearchMessage": "No transactions found matching the keyword \"{query}\".",
+  "@emptySearchMessage": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "emptyPeriodMessage": "No financial records for {period}.",
+  "@emptyPeriodMessage": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "addNewRecord": "Add New Record",
+
+  "transactionDeleted": "Record \"{title}\" deleted",
+  "@transactionDeleted": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "undo": "Undo",
+
+  "monthlyBalance": "Balance This Month",
+  "totalBalance": "Total: {amount}",
+  "@totalBalance": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+
+  "allFilter": "All",
+
+  "statisticsTitle": "Reports & Statistics",
+  "listViewTooltip": "List View",
+  "chartViewTooltip": "Chart View",
+  "totalThisMonth": "Total {type} This Month",
+  "@totalThisMonth": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "categoriesRecorded": "{count} categories recorded",
+  "@categoriesRecorded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "budgetThisMonth": "Budget This Month",
+  "setBudget": "Set",
+  "categoryBreakdown": "Breakdown by Category",
+  "emptyDataTitle": "No Data Yet",
+  "emptyStatsMessage": "No {type} records for {period}.",
+  "@emptyStatsMessage": {
+    "placeholders": {
+      "type": {"type": "String"},
+      "period": {"type": "String"}
+    }
+  },
+  "proportionPerCategory": "Proportion by Category",
+  "trendTitle": "Last 6 Months Trend",
+  "trendSubtitle": "Income vs expense comparison",
+  "categoryTransactionCount": "{count} transactions",
+  "@categoryTransactionCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "chartTotalLabel": "Total",
+  "compactBillion": "B",
+  "compactMillion": "M",
+  "compactThousand": "K",
+
+  "addRecordTitle": "Add New Record",
+  "editRecordTitle": "Edit Record",
+  "updateRecord": "Update Record",
+  "saveTransaction": "Save Transaction",
+  "amountLabel": "Amount",
+  "amountRequired": "Enter the transaction amount",
+  "amountMustBePositive": "Amount must be greater than 0",
+  "transactionTitleLabel": "Transaction Title",
+  "transactionTitleRequired": "Transaction title is required",
+  "transactionTitleHint": "e.g. Lunch, Office Salary, etc.",
+  "categoryLabel": "Category",
+  "dateLabel": "Date",
+  "noteOptionalLabel": "Additional Note (Optional)",
+  "noteHint": "Details or extra information...",
+  "deleteRecordAction": "Delete Record",
+  "deleteRecordTitle": "Delete Record?",
+  "deleteRecordMessage": "This record will be deleted permanently.",
+  "deleteTransactionConfirm": "Are you sure you want to delete the record \"{title}\"?",
+  "@deleteTransactionConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+
+  "manageCategoryTitle": "Manage Categories",
+  "yourCategories": "Your Categories ({count})",
+  "@yourCategories": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "defaultCategories": "Default Categories ({count})",
+  "@defaultCategories": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "addCategory": "Add Category",
+  "categoryAdded": "Category \"{name}\" added",
+  "@categoryAdded": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "categoryUpdated": "Category \"{name}\" updated",
+  "@categoryUpdated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "categoryDeleted": "Category \"{name}\" deleted",
+  "@categoryDeleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "deleteCategoryTitle": "Delete Category?",
+  "deleteCategoryMessage": "Category \"{name}\" will be deleted permanently.",
+  "@deleteCategoryMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "deleteCategoryUnusedInfo": "This category is not used by any transaction.",
+  "deleteCategoryFailed": "Delete failed: {error}",
+  "@deleteCategoryFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "categoryInUseTooltip": "In use",
+  "notUsed": "Not used",
+  "editCategoryTitle": "Edit Category",
+  "categoryNameLabel": "Category Name",
+  "categoryNameRequired": "Name is required",
+  "categoryNameMax30": "Maximum 30 characters",
+  "categoryNameHint": "e.g. Coffee, Pets, etc.",
+  "pickIcon": "Pick Icon",
+  "pickColor": "Pick Color",
+  "customBadge": "Custom",
+  "categoryEditInfo": "Changes will apply to all transactions using this category.",
+  "actionFailed": "Failed: {error}",
+  "@actionFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "categoryDefaultCannotDelete": "Default categories cannot be deleted",
+  "categoryDefaultCannotEdit": "Default categories cannot be edited",
+  "categoryStillUsed": "Category is still used by {count} transactions",
+  "@categoryStillUsed": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "categoryNotFound": "Category not found",
+
+  "manageBudgetTitle": "Manage Budget",
+  "budgetIntro": "Set monthly spending limits for total or per category.",
+  "totalMonthlyExpense": "Total Monthly Expense",
+  "totalExpenseLabel": "Total Expense",
+  "totalBudgetCard": "Total Budget",
+  "perExpenseCategory": "By Expense Category",
+  "noCategoryBudget": "No category budget yet. Tap + to add one.",
+  "notSetTapToSet": "Not set - tap to set a budget",
+  "addCategoryBudget": "Add Category Budget",
+  "globalBudgetTitle": "Total Monthly Budget",
+  "categoryBudgetTitle": "{name} Budget",
+  "@categoryBudgetTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "globalBudgetDesc": "Monthly spending limit across all categories.",
+  "categoryBudgetDesc": "Monthly spending limit for this category.",
+  "enterZeroToDelete": "Enter 0 to delete the budget",
+  "currentBudget": "Current: {amount}/month",
+  "@currentBudget": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "deleteBudgetTitle": "Delete Budget?",
+  "deleteBudgetMessage": "Budget \"{title}\" will be deleted.",
+  "@deleteBudgetMessage": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "invalidAmount": "Invalid amount",
+  "budgetSaveFailed": "Failed to save: {error}",
+  "@budgetSaveFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "budgetSpent": "Spent {amount}",
+  "@budgetSpent": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "ofLimit": "of {amount}",
+  "@ofLimit": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "overBudgetBy": "Over budget by {amount}",
+  "@overBudgetBy": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "budgetRemaining": "{amount} left",
+  "@budgetRemaining": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "moreBudgets": "+{count} more budgets",
+  "@moreBudgets": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "exportImportTitle": "Export & Import Data",
+  "exportImportSubtitle": "Back up your data or move it to another device",
+  "storedTransactions": "{count} transactions stored",
+  "@storedTransactions": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "exportSection": "EXPORT",
+  "jsonFormat": "JSON",
+  "jsonFormatDesc": "Full format",
+  "csvFormat": "CSV",
+  "csvFormatDesc": "For Excel",
+  "importSection": "IMPORT",
+  "pickFile": "Choose File",
+  "jsonOrCsv": "JSON or CSV",
+  "exportSuccess": "{format} file created successfully",
+  "@exportSuccess": {
+    "placeholders": {
+      "format": {"type": "String"}
+    }
+  },
+  "exportFailed": "Export failed: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "importFailed": "Import failed: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "pickFileFailed": "Failed to pick file: {error}",
+  "@pickFileFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "noDataToExport": "No data to export",
+  "noValidTransactions": "No valid transactions in the file",
+  "errFileReadFailed": "Failed to read the file",
+  "errInvalidJson": "Invalid JSON format",
+  "errEmptyCsv": "CSV is empty or contains no data",
+  "importSuccessTitle": "Import Successful",
+  "importPreviewTitle": "Import Preview",
+  "importStrategyTitle": "Import Strategy",
+  "chooseStrategy": "Choose how data from the file is imported:",
+  "mergeStrategy": "Merge",
+  "mergeStrategyDesc": "Keep existing data, update matching entries",
+  "skipStrategy": "Add New Only",
+  "skipStrategyDesc": "Skip transactions whose ID already exists",
+  "replaceStrategy": "Replace All",
+  "replaceStrategyDesc": "Remove existing data, replace with file",
+  "recommended": "Recommended",
+  "transactionsFound": "{count} transactions found",
+  "@transactionsFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "budgetsFound": "{count} budgets found",
+  "@budgetsFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customCategoriesFound": "{count} custom categories found",
+  "@customCategoriesFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "exampleData": "Sample data:",
+  "andMore": "... and {count} more",
+  "@andMore": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "backupShareText": "CatetKeun backup",
+  "backupShareWithCount": "CatetKeun backup - {count} transactions ({format})",
+  "@backupShareWithCount": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "format": {"type": "String"}
+    }
+  },
+
+  "importSummary": "{total} transactions imported ({added} new, {updated} updated, {skipped} skipped)",
+  "@importSummary": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "added": {"type": "int"},
+      "updated": {"type": "int"},
+      "skipped": {"type": "int"}
+    }
+  },
+  "importReplaceDesc": "All existing data is replaced with data from the file",
+  "importMergeDesc": "Data is merged - existing updated, new added",
+  "importSkipDesc": "Only new transactions are added",
+
+  "catExpFood": "Food & Drinks",
+  "catExpTransport": "Transportation",
+  "catExpShopping": "Shopping",
+  "catExpBills": "Bills & Utilities",
+  "catExpEntertainment": "Entertainment",
+  "catExpHealth": "Health",
+  "catExpEducation": "Education",
+  "catExpOther": "Others",
+  "catIncSalary": "Base Salary",
+  "catIncBonus": "Bonus & THR",
+  "catIncInvestment": "Investment",
+  "catIncBusiness": "Business",
+  "catIncSale": "Item Sale",
+  "catIncGift": "Gifts",
+  "catIncOther": "Others",
+
+  "languageSetting": "Language",
+  "languageNameId": "Indonesia",
+  "languageNameEn": "English",
+
+  "sampleSalaryTitle": "Monthly Salary",
+  "sampleSalaryNote": "Office salary transfer",
+  "sampleShoppingTitle": "Weekly Groceries",
+  "sampleShoppingNote": "Supermarket",
+  "sampleFuelTitle": "Fuel & Toll",
+  "sampleFuelNote": "Fill up Pertamax",
+  "sampleLunchTitle": "Lunch & Coffee",
+  "sampleLunchNote": "Cafe near the office",
+  "sampleSideJobTitle": "Side Project",
+  "sampleSideJobNote": "Freelance UI design"
+}

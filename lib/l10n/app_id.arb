@@ -1,0 +1,422 @@
+{
+  "@@locale": "id",
+
+  "appTitle": "CatetKeun",
+
+  "cancel": "Batal",
+  "save": "Simpan",
+  "delete": "Hapus",
+  "edit": "Ubah",
+  "add": "Tambah",
+  "done": "Selesai",
+  "continueBtn": "Lanjutkan",
+  "close": "Tutup",
+
+  "income": "Pemasukan",
+  "expense": "Pengeluaran",
+  "incomeShort": "Masuk",
+  "expenseShort": "Keluar",
+
+  "previousMonth": "Bulan Sebelumnya",
+  "nextMonth": "Bulan Berikutnya",
+
+  "today": "Hari ini",
+  "yesterday": "Kemarin",
+
+  "searchTitle": "Cari Transaksi",
+  "closeSearchTitle": "Tutup Pencarian",
+  "searchHint": "Cari transaksi...",
+  "moreMenu": "Menu Lainnya",
+  "manageBudgetMenu": "Kelola Anggaran",
+  "manageCategoryMenu": "Kelola Kategori",
+  "exportImportMenu": "Ekspor/Impor Data",
+  "lightMode": "Mode Terang",
+  "darkMode": "Mode Gelap",
+
+  "navTransactions": "Transaksi",
+  "navStatistics": "Statistik",
+  "navAbout": "Tentang",
+  "addTransaction": "Catat Transaksi",
+  "transactionHistory": "Riwayat Transaksi",
+  "transactionCount": "{count} transaksi",
+  "@transactionCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "emptyTransactionsTitle": "Belum Ada Transaksi",
+  "emptySearchMessage": "Tidak ditemukan transaksi yang cocok dengan kata kunci \"{query}\".",
+  "@emptySearchMessage": {
+    "placeholders": {
+      "query": {"type": "String"}
+    }
+  },
+  "emptyPeriodMessage": "Belum ada catatan keuangan pada periode {period}.",
+  "@emptyPeriodMessage": {
+    "placeholders": {
+      "period": {"type": "String"}
+    }
+  },
+  "addNewRecord": "Tambah Catatan Baru",
+
+  "transactionDeleted": "Catatan \"{title}\" dihapus",
+  "@transactionDeleted": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "undo": "Urungkan",
+
+  "monthlyBalance": "Saldo Bulan Ini",
+  "totalBalance": "Total: {amount}",
+  "@totalBalance": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+
+  "allFilter": "Semua",
+
+  "statisticsTitle": "Laporan & Statistik",
+  "listViewTooltip": "Tampilan Daftar",
+  "chartViewTooltip": "Tampilan Grafik",
+  "totalThisMonth": "Total {type} Bulan Ini",
+  "@totalThisMonth": {
+    "placeholders": {
+      "type": {"type": "String"}
+    }
+  },
+  "categoriesRecorded": "{count} Kategori tercatat",
+  "@categoriesRecorded": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "budgetThisMonth": "Anggaran Bulan Ini",
+  "setBudget": "Atur",
+  "categoryBreakdown": "Rincian per Kategori",
+  "emptyDataTitle": "Belum Ada Data",
+  "emptyStatsMessage": "Tidak ada catatan {type} pada periode {period}.",
+  "@emptyStatsMessage": {
+    "placeholders": {
+      "type": {"type": "String"},
+      "period": {"type": "String"}
+    }
+  },
+  "proportionPerCategory": "Proporsi per Kategori",
+  "trendTitle": "Tren 6 Bulan Terakhir",
+  "trendSubtitle": "Perbandingan pemasukan vs pengeluaran",
+  "categoryTransactionCount": "{count} transaksi",
+  "@categoryTransactionCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "chartTotalLabel": "Total",
+  "compactBillion": "M",
+  "compactMillion": "Jt",
+  "compactThousand": "K",
+
+  "addRecordTitle": "Tambah Catatan Baru",
+  "editRecordTitle": "Ubah Catatan",
+  "updateRecord": "Perbarui Catatan",
+  "saveTransaction": "Simpan Transaksi",
+  "amountLabel": "Nominal",
+  "amountRequired": "Masukkan nominal transaksi",
+  "amountMustBePositive": "Nominal harus lebih dari 0",
+  "transactionTitleLabel": "Judul Transaksi",
+  "transactionTitleRequired": "Judul transaksi wajib diisi",
+  "transactionTitleHint": "Misal: Makan Siang, Gaji Kantor, dll.",
+  "categoryLabel": "Kategori",
+  "dateLabel": "Tanggal",
+  "noteOptionalLabel": "Catatan Tambahan (Opsional)",
+  "noteHint": "Keterangan atau rincian tambahan...",
+  "deleteRecordAction": "Hapus Catatan",
+  "deleteRecordTitle": "Hapus Catatan?",
+  "deleteRecordMessage": "Catatan ini akan dihapus secara permanen.",
+  "deleteTransactionConfirm": "Apakah Anda yakin ingin menghapus catatan \"{title}\"?",
+  "@deleteTransactionConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+
+  "manageCategoryTitle": "Kelola Kategori",
+  "yourCategories": "Kategori Kamu ({count})",
+  "@yourCategories": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "defaultCategories": "Kategori Bawaan ({count})",
+  "@defaultCategories": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "addCategory": "Tambah Kategori",
+  "categoryAdded": "Kategori \"{name}\" ditambahkan",
+  "@categoryAdded": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "categoryUpdated": "Kategori \"{name}\" diperbarui",
+  "@categoryUpdated": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "categoryDeleted": "Kategori \"{name}\" dihapus",
+  "@categoryDeleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "deleteCategoryTitle": "Hapus Kategori?",
+  "deleteCategoryMessage": "Kategori \"{name}\" akan dihapus permanen.",
+  "@deleteCategoryMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "deleteCategoryUnusedInfo": "Kategori ini tidak digunakan oleh transaksi mana pun.",
+  "deleteCategoryFailed": "Gagal hapus: {error}",
+  "@deleteCategoryFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "categoryInUseTooltip": "Masih dipakai",
+  "notUsed": "Tidak digunakan",
+  "editCategoryTitle": "Ubah Kategori",
+  "categoryNameLabel": "Nama Kategori",
+  "categoryNameRequired": "Nama wajib diisi",
+  "categoryNameMax30": "Maksimal 30 karakter",
+  "categoryNameHint": "Misal: Kopi, Hewan Peliharaan, dll.",
+  "pickIcon": "Pilih Icon",
+  "pickColor": "Pilih Warna",
+  "customBadge": "Custom",
+  "categoryEditInfo": "Perubahan akan diterapkan ke semua transaksi yang menggunakan kategori ini.",
+  "actionFailed": "Gagal: {error}",
+  "@actionFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+
+  "categoryDefaultCannotDelete": "Kategori bawaan tidak dapat dihapus",
+  "categoryDefaultCannotEdit": "Kategori default tidak bisa diubah",
+  "categoryStillUsed": "Kategori masih digunakan oleh {count} transaksi",
+  "@categoryStillUsed": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "categoryNotFound": "Kategori tidak ditemukan",
+
+  "manageBudgetTitle": "Kelola Anggaran",
+  "budgetIntro": "Tetapkan batas pengeluaran bulanan untuk total atau per kategori.",
+  "totalMonthlyExpense": "Total Pengeluaran Bulanan",
+  "totalExpenseLabel": "Total Pengeluaran",
+  "totalBudgetCard": "Anggaran Total",
+  "perExpenseCategory": "Per Kategori Pengeluaran",
+  "noCategoryBudget": "Belum ada anggaran per kategori. Tap tombol + untuk menambah.",
+  "notSetTapToSet": "Belum diatur - tap untuk atur anggaran",
+  "addCategoryBudget": "Tambah Anggaran Kategori",
+  "globalBudgetTitle": "Anggaran Total Bulanan",
+  "categoryBudgetTitle": "Anggaran {name}",
+  "@categoryBudgetTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "globalBudgetDesc": "Batas total pengeluaran semua kategori per bulan.",
+  "categoryBudgetDesc": "Batas pengeluaran kategori ini per bulan.",
+  "enterZeroToDelete": "Masukkan 0 untuk menghapus anggaran",
+  "currentBudget": "Saat ini: {amount}/bulan",
+  "@currentBudget": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "deleteBudgetTitle": "Hapus Anggaran?",
+  "deleteBudgetMessage": "Anggaran \"{title}\" akan dihapus.",
+  "@deleteBudgetMessage": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "invalidAmount": "Nominal tidak valid",
+  "budgetSaveFailed": "Gagal menyimpan: {error}",
+  "@budgetSaveFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "budgetSpent": "Terpakai {amount}",
+  "@budgetSpent": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "ofLimit": "dari {amount}",
+  "@ofLimit": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "overBudgetBy": "Melebihi anggaran {amount}",
+  "@overBudgetBy": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "budgetRemaining": "Tersisa {amount}",
+  "@budgetRemaining": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "moreBudgets": "+{count} anggaran lainnya",
+  "@moreBudgets": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "exportImportTitle": "Ekspor & Impor Data",
+  "exportImportSubtitle": "Backup data kamu atau pindahkan ke perangkat lain",
+  "storedTransactions": "{count} transaksi tersimpan",
+  "@storedTransactions": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "exportSection": "EKSPOR",
+  "jsonFormat": "JSON",
+  "jsonFormatDesc": "Format lengkap",
+  "csvFormat": "CSV",
+  "csvFormatDesc": "Untuk Excel",
+  "importSection": "IMPOR",
+  "pickFile": "Pilih File",
+  "jsonOrCsv": "JSON atau CSV",
+  "exportSuccess": "File {format} berhasil dibuat",
+  "@exportSuccess": {
+    "placeholders": {
+      "format": {"type": "String"}
+    }
+  },
+  "exportFailed": "Gagal ekspor: {error}",
+  "@exportFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "importFailed": "Gagal impor: {error}",
+  "@importFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "pickFileFailed": "Gagal memilih file: {error}",
+  "@pickFileFailed": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "noDataToExport": "Tidak ada data untuk diekspor",
+  "noValidTransactions": "Tidak ada transaksi valid di file",
+  "errFileReadFailed": "Gagal membaca file",
+  "errInvalidJson": "Format JSON tidak valid",
+  "errEmptyCsv": "CSV kosong atau tidak ada data",
+  "importSuccessTitle": "Impor Berhasil",
+  "importPreviewTitle": "Preview Impor",
+  "importStrategyTitle": "Strategi Impor",
+  "chooseStrategy": "Pilih cara data dari file diimpor:",
+  "mergeStrategy": "Gabungkan (Merge)",
+  "mergeStrategyDesc": "Data lama dipertahankan, yang sama diperbarui",
+  "skipStrategy": "Tambah Baru Saja",
+  "skipStrategyDesc": "Skip transaksi yang ID-nya sudah ada",
+  "replaceStrategy": "Ganti Semua (Replace)",
+  "replaceStrategyDesc": "Hapus data lama, ganti dengan file",
+  "recommended": "Disarankan",
+  "transactionsFound": "{count} transaksi ditemukan",
+  "@transactionsFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "budgetsFound": "{count} anggaran ditemukan",
+  "@budgetsFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "customCategoriesFound": "{count} kategori custom ditemukan",
+  "@customCategoriesFound": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "exampleData": "Contoh data:",
+  "andMore": "... dan {count} lainnya",
+  "@andMore": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "backupShareText": "Backup data CatetKeun",
+  "backupShareWithCount": "Backup CatetKeun - {count} transaksi ({format})",
+  "@backupShareWithCount": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "format": {"type": "String"}
+    }
+  },
+
+  "importSummary": "{total} transaksi diimpor ({added} baru, {updated} diperbarui, {skipped} dilewati)",
+  "@importSummary": {
+    "placeholders": {
+      "total": {"type": "int"},
+      "added": {"type": "int"},
+      "updated": {"type": "int"},
+      "skipped": {"type": "int"}
+    }
+  },
+  "importReplaceDesc": "Semua data lama diganti dengan data dari file",
+  "importMergeDesc": "Data digabung - yang sudah ada diperbarui, yang baru ditambahkan",
+  "importSkipDesc": "Hanya transaksi baru yang ditambahkan",
+
+  "catExpFood": "Makanan & Minuman",
+  "catExpTransport": "Transportasi",
+  "catExpShopping": "Belanja",
+  "catExpBills": "Tagihan & Utilitas",
+  "catExpEntertainment": "Hiburan",
+  "catExpHealth": "Kesehatan",
+  "catExpEducation": "Pendidikan",
+  "catExpOther": "Lainnya",
+  "catIncSalary": "Gaji Pokok",
+  "catIncBonus": "Bonus & THR",
+  "catIncInvestment": "Investasi",
+  "catIncBusiness": "Usaha / Bisnis",
+  "catIncSale": "Penjualan Barang",
+  "catIncGift": "Hadiah & Hibah",
+  "catIncOther": "Lainnya",
+
+  "languageSetting": "Bahasa",
+  "languageNameId": "Indonesia",
+  "languageNameEn": "English",
+
+  "sampleSalaryTitle": "Gaji Bulanan",
+  "sampleSalaryNote": "Transfer gaji kantor",
+  "sampleShoppingTitle": "Belanja Mingguan",
+  "sampleShoppingNote": "Supermarket",
+  "sampleFuelTitle": "Bensin & Tol",
+  "sampleFuelNote": "Isi Pertamax",
+  "sampleLunchTitle": "Makan Siang & Kopi",
+  "sampleLunchNote": "Kafe dekat kantor",
+  "sampleSideJobTitle": "Project Sampingan",
+  "sampleSideJobNote": "Desain UI freelance"
+}

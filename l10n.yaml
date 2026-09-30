@@ -1,0 +1,10 @@
+arb-dir: lib/l10n
+template-arb-file: app_id.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+output-dir: lib/l10n/generated
+
+# `AppLocalizations.of(context)` mengembalikan AppLocalizations? sehingga
+# pemanggil wajib memakai `!` (atau fallback). Semua kode di project ini sudah
+# mengikuti pola `AppLocalizations.of(context)!`.
+nullable-getter: true
