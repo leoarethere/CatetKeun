@@ -72,17 +72,19 @@ class FinanceProvider extends ChangeNotifier {
 
     // Load tema dan bahasa yang tersimpan
     await _loadPreferences();
-    
-    // Load data transaksi, kategori custom, dan budget secara paralel
+
+    // Kategori custom wajib dimuat DULU: transaksi hanya menyimpan
+    // `categoryId`, sehingga tanpa daftar kategori kustom transaksi yang
+    // memakai kategori buatan user akan jatuh ke "Lainnya" saat di-parse.
+    // Anggaran tidak bergantung pada keduanya, jadi boleh paralel.
+    _customCategories = await _categoryRepository.loadCustomCategories();
     final results = await Future.wait([
-      _repository.loadTransactions(),
-      _categoryRepository.loadCustomCategories(),
+      _repository.loadTransactions(customCategories: _customCategories),
       _budgetRepository.loadBudgets(),
     ]);
-    
+
     _transactions = results[0] as List<Transaction>;
-    _customCategories = results[1] as List<TransactionCategory>;
-    _budgets = results[2] as List<Budget>;
+    _budgets = results[1] as List<Budget>;
 
     // Data contoh (sample) ditulis dalam bahasa Indonesia oleh repository.
     // Lokalisasi sesuai bahasa aktif - hanya berlaku saat user belum
@@ -90,6 +92,24 @@ class FinanceProvider extends ChangeNotifier {
     await _localizeSampleData();
 
     _isLoading = false;
+    notifyListeners();
+  }
+
+  /// Muat ulang data transaksi, kategori custom, dan anggaran dari storage.
+  ///
+  /// Dipakai setelah impor/ekspor yang menulis langsung ke repository
+  /// (bukan lewat provider), supaya state provider sinkron tanpa harus
+  /// mengulang langkah first-run (`_loadPreferences`, `_localizeSampleData`).
+  Future<void> reloadData() async {
+    // Kategori custom dulu (transaksi hanya menyimpan categoryId).
+    _customCategories = await _categoryRepository.loadCustomCategories();
+    final results = await Future.wait([
+      _repository.loadTransactions(customCategories: _customCategories),
+      _budgetRepository.loadBudgets(),
+    ]);
+
+    _transactions = results[0] as List<Transaction>;
+    _budgets = results[1] as List<Budget>;
     notifyListeners();
   }
 

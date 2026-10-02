@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'widgets/app_logo.dart';
 
-
-/// Halaman Tentang aplikasi
+/// Halaman Tentang aplikasi.
+///
+/// Semua teks diambil dari l10n agar ikut berganti saat bahasa diubah.
+/// Konstanta non-teks (versi, kontak, lisensi) dipisah ke [_AppInfo] supaya
+/// nilai yang sering berubah mudah ditemukan dan tidak tersebar di widget.
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
@@ -20,7 +23,13 @@ class AboutScreen extends StatelessWidget {
           children: [
             const AppLogo(size: 26),
             const SizedBox(width: 10),
-            Text(l10n.appTitle, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, letterSpacing: -0.2)),
+            Text(
+              l10n.appTitle,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.2,
+              ),
+            ),
           ],
         ),
         centerTitle: false,
@@ -48,70 +57,110 @@ class AboutScreen extends StatelessWidget {
             const SizedBox(height: 24),
             // Deskripsi singkat
             Text(
-              'Aplikasi Catetan Keuangan membantu Anda mencatat, mengelola, dan menganalisis pengeluaran serta pemasukan secara mudah dan intuitif.',
+              l10n.aboutTagline,
               style: theme.textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            // Versi aplikasi (hard‑coded placeholder)
+            // Versi aplikasi
             ListTile(
               leading: const Icon(Icons.info_outline_rounded),
-              title: const Text('Versi'),
-              subtitle: const Text('1.0.0'),
+              title: Text(l10n.aboutVersion),
+              subtitle: const Text(_AppInfo.version),
             ),
             const Divider(),
             // Pengembang / kontak
             ListTile(
               leading: const Icon(Icons.developer_mode_rounded),
-              title: const Text('Pengembang'),
-              subtitle: Text('Leona Dev'),
+              title: Text(l10n.aboutDeveloper),
+              subtitle: const Text(_AppInfo.developerName),
             ),
             ListTile(
               leading: const Icon(Icons.email_outlined),
-              title: const Text('Email'),
-              subtitle: const Text('leona@example.com'),
+              title: Text(l10n.aboutEmail),
+              subtitle: const Text(_AppInfo.email),
             ),
             ListTile(
               leading: const Icon(Icons.link_rounded),
-              title: const Text('Website'),
-              subtitle: const Text('https://leona.dev'),
+              title: Text(l10n.aboutWebsite),
+              subtitle: const Text(_AppInfo.website),
             ),
             const Divider(),
             // Legal / lisensi
             ListTile(
               leading: const Icon(Icons.article_outlined),
-              title: const Text('Lisensi'),
-              subtitle: const Text('MIT License'),
+              title: Text(l10n.aboutLicense),
+              subtitle: const Text(_AppInfo.license),
             ),
             ListTile(
               leading: const Icon(Icons.copyright_rounded),
-              title: const Text('Hak Cipta'),
-              subtitle: const Text('© 2026 Leona'),
+              title: Text(l10n.aboutCopyright),
+              subtitle: Text(l10n.aboutCopyrightValue),
             ),
             const Divider(),
             // Acknowledgements
             Text(
-              'Terima kasih kepada semua library dan framework open‑source yang digunakan dalam pengembangan aplikasi ini, termasuk Flutter, Provider, dan lainnya.',
-              style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+              l10n.aboutThanks,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            // Kebijakan privasi & syarat penggunaan (placeholder links)
+            // Kebijakan privasi & syarat penggunaan.
+            // Konten legal belum tersedia: buka dialog penjelasan supaya
+            // tombol tidak terasa rusak (dulu onPressed kosong).
             TextButton(
-              onPressed: () {
-                // TODO: navigate to privacy policy page or external URL
-              },
-              child: const Text('Kebijakan Privasi'),
+              onPressed: () => _showInfoDialog(
+                context,
+                title: l10n.aboutPrivacy,
+                message: l10n.aboutPrivacyPending,
+              ),
+              child: Text(l10n.aboutPrivacy),
             ),
             TextButton(
-              onPressed: () {
-                // TODO: navigate to terms of service page or external URL
-              },
-              child: const Text('Syarat Penggunaan'),
+              onPressed: () => _showInfoDialog(
+                context,
+                title: l10n.aboutTerms,
+                message: l10n.aboutTermsPending,
+              ),
+              child: Text(l10n.aboutTerms),
             ),
           ],
         ),
       ),
     );
   }
+
+  Future<void> _showInfoDialog(
+    BuildContext context, {
+    required String title,
+    required String message,
+  }) {
+    final l10n = AppLocalizations.of(context)!;
+    return showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Metadata aplikasi yang bukan teks terjemahan.
+class _AppInfo {
+  const _AppInfo._();
+
+  static const String version = '1.0.0';
+  static const String developerName = 'Leona Dev';
+  static const String email = 'leona@example.com';
+  static const String website = 'https://leona.dev';
+  static const String license = 'MIT License';
 }

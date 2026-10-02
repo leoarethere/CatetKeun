@@ -465,33 +465,9 @@ class _CategoryFormDialogState extends State<_CategoryFormDialog> {
 
   bool get isEditing => widget.initialCategory != null;
 
-  // Preset icons untuk dipilih
-  static const List<IconData> _availableIcons = [
-    Icons.shopping_cart_rounded,
-    Icons.restaurant_rounded,
-    Icons.directions_car_rounded,
-    Icons.home_rounded,
-    Icons.health_and_safety_rounded,
-    Icons.school_rounded,
-    Icons.pets_rounded,
-    Icons.flight_rounded,
-    Icons.coffee_rounded,
-    Icons.movie_rounded,
-    Icons.music_note_rounded,
-    Icons.fitness_center_rounded,
-    Icons.checkroom_rounded,
-    Icons.phone_iphone_rounded,
-    Icons.laptop_mac_rounded,
-    Icons.card_giftcard_rounded,
-    Icons.favorite_rounded,
-    Icons.star_rounded,
-    Icons.savings_rounded,
-    Icons.trending_up_rounded,
-    Icons.business_center_rounded,
-    Icons.payments_rounded,
-    Icons.account_balance_rounded,
-    Icons.card_membership_rounded,
-  ];
+  // Preset ikon: pakai daftar bersama dari model supaya ikon yang
+  // dipilih selalu bisa di-resolve kembali setelah restart.
+  static const List<IconData> _availableIcons = availableCategoryIcons;
 
   // Preset colors
   static const List<Color> _availableColors = [

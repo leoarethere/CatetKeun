@@ -285,8 +285,12 @@ class _ExportImportSheetState extends State<ExportImportSheet> {
     setState(() => _isProcessing = true);
 
     try {
-      // Pick file dan parse (tanpa apply dulu)
-      final pickResult = await _service.pickFileForImport();
+      // Pick file dan parse (tanpa apply dulu). Sertakan kategori custom
+      // agar transaksi CSV yang memakai kategori custom tidak jatuh ke
+      // "Lainnya".
+      final pickResult = await _service.pickFileForImport(
+        customCategories: widget.provider.customCategories,
+      );
 
       if (pickResult == null) {
         // User membatalkan
@@ -347,8 +351,8 @@ class _ExportImportSheetState extends State<ExportImportSheet> {
         return;
       }
 
-      // Refresh provider
-      await widget.provider.initialize();
+      // Refresh provider (muat ulang data saja, tanpa langkah first-run).
+      await widget.provider.reloadData();
 
       if (mounted) {
         setState(() => _isProcessing = false);
@@ -369,6 +373,27 @@ class _ExportImportSheetState extends State<ExportImportSheet> {
   ) {
     final theme = Theme.of(context);
 
+    // Susun ringkasan dari bagian yang benar-benar ikut diimpor, supaya
+    // file yang hanya berisi anggaran/kategori tidak tampil sebagai
+    // "0 transaksi diimpor" yang menyesatkan.
+    final parts = <String>[];
+    if (result.totalImported > 0) {
+      parts.add(
+        l10n.importSummary(
+          result.totalImported,
+          result.added,
+          result.updated,
+          result.skipped,
+        ),
+      );
+    }
+    if (result.budgetsImported > 0) {
+      parts.add(l10n.budgetsFound(result.budgetsImported));
+    }
+    if (result.categoriesImported > 0) {
+      parts.add(l10n.customCategoriesFound(result.categoriesImported));
+    }
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -382,12 +407,8 @@ class _ExportImportSheetState extends State<ExportImportSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              l10n.importSummary(
-                result.totalImported,
-                result.added,
-                result.updated,
-                result.skipped,
-              ),
+              parts.join('\n'),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             Text(

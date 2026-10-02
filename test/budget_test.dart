@@ -213,6 +213,256 @@ void main() {
     });
   });
 
+  group('Regresi kategori custom & data contoh', () {
+    test('semua ikon picker bertahan setelah JSON round-trip', () {
+      for (final icon in availableCategoryIcons) {
+        const original = TransactionCategory(
+          id: 'exp_custom_x',
+          name: 'X',
+          icon: Icons.coffee_rounded,
+          color: Colors.brown,
+          type: TransactionType.expense,
+          isCustom: true,
+        );
+        final withIcon = original.copyWith(icon: icon);
+        final restored = TransactionCategory.fromJson(withIcon.toJson());
+        expect(
+          restored.icon.codePoint,
+          icon.codePoint,
+          reason: 'ikon ${icon.codePoint} hilang setelah round-trip',
+        );
+      }
+    });
+
+    test('kategori custom tetap ter-resolve setelah restart', () async {
+      final provider = FinanceProvider();
+      await provider.initialize();
+
+      final custom = await provider.addCategory(
+        name: 'Kopi',
+        icon: Icons.coffee,
+        color: Colors.brown,
+        type: TransactionType.expense,
+      );
+
+      await provider.addTransaction(
+        Transaction(
+          id: 'tx_custom_1',
+          title: 'Ngopi sore',
+          amount: 25000,
+          type: TransactionType.expense,
+          category: custom,
+          date: DateTime.now(),
+        ),
+      );
+
+      // Simulasi restart: provider baru membaca storage yang sama.
+      final restarted = FinanceProvider();
+      await restarted.initialize();
+
+      final found = restarted.allTransactions
+          .where((t) => t.id == 'tx_custom_1');
+      expect(found, isNotEmpty);
+      expect(found.single.category.id, custom.id);
+      expect(found.single.category.name, 'Kopi');
+
+      // Usage count ikut benar sehingga kategori tidak bisa dihapus diam-diam.
+      expect(restarted.getCategoryUsageCount(custom.id), 1);
+      expect(restarted.canDeleteCategory(custom).canDelete, isFalse);
+    });
+
+    test('transaksi custom dari backup JSON ter-resolve kategorinya', () {
+      const custom = TransactionCategory(
+        id: 'exp_custom_kopi',
+        name: 'Kopi',
+        icon: Icons.coffee,
+        color: Colors.brown,
+        type: TransactionType.expense,
+        isCustom: true,
+      );
+      final tx = Transaction(
+        id: 't_custom',
+        title: 'Ngopi',
+        amount: 25000,
+        type: TransactionType.expense,
+        category: custom,
+        date: DateTime(2026, 1, 5),
+      );
+
+      final json = ExportImportService().buildExportJson(
+        [tx],
+        customCategories: const [custom],
+      );
+      final preview = ExportImportService().parseJsonBackup(json);
+
+      expect(preview.transactions.length, 1);
+      expect(preview.transactions.single.category.id, custom.id);
+      expect(preview.transactions.single.category.name, 'Kopi');
+    });
+
+    test('daftar kosong tidak menanam ulang data contoh', () async {
+      final provider = FinanceProvider();
+      await provider.initialize();
+
+      // First-run menanam data contoh; kosongkan seperti user menghapus semua.
+      for (final t in List.of(provider.allTransactions)) {
+        await provider.deleteTransaction(t.id);
+      }
+      expect(provider.allTransactions, isEmpty);
+
+      // Simulasi restart: tidak boleh ada data contoh yang muncul kembali.
+      final restarted = FinanceProvider();
+      await restarted.initialize();
+
+      expect(restarted.allTransactions, isEmpty);
+    });
+
+    test('CSV hasil ekspor bisa diimpor kembali (round-trip)', () async {
+      final service = ExportImportService();
+      final tx = Transaction(
+        id: 't_csv_1',
+        title: 'Gaji',
+        amount: 5000000,
+        type: TransactionType.income,
+        category: TransactionCategory.getById('inc_salary'),
+        date: DateTime(2026, 2, 10),
+        note: 'Transfer',
+      );
+
+      final content = service.buildExportCsv([tx]);
+
+      // Tipe ditulis sebagai kode stabil, bukan label bahasa.
+      expect(content, contains('income'));
+
+      // Parse CSV lewat jalur publik yang sama dengan impor file.
+      final csvPreview = service.parseCsvBackup(content);
+      expect(csvPreview.transactions.length, 1);
+      expect(csvPreview.transactions.single.type, TransactionType.income);
+      expect(csvPreview.transactions.single.amount, 5000000);
+      expect(csvPreview.incomeCount, 1);
+    });
+
+    test('impor file anggaran-only melaporkan jumlah anggaran', () async {
+      final json = ExportImportService().buildExportJson(
+        const [],
+        budgets: const [
+          Budget(id: 'global', monthlyLimit: 750000),
+        ],
+      );
+
+      final service = ExportImportService();
+      final preview = service.parseJsonBackup(json);
+      final result = await service.applyImport(
+        preview: preview,
+        currentTransactions: const [],
+        strategy: ImportStrategy.merge,
+      );
+
+      expect(result.success, isTrue);
+      expect(result.totalImported, 0);
+      expect(result.budgetsImported, 1);
+    });
+
+    test('fallback kategori tak dikenal sadar tipe (income → Lainnya income)',
+        () {
+      final income = Transaction.fromJson({
+        'id': 't_inc',
+        'title': 'X',
+        'amount': 1000,
+        'type': 'income',
+        'categoryId': 'inc_tidak_ada',
+        'date': DateTime(2026, 1, 1).toIso8601String(),
+      });
+      expect(income.category.type, TransactionType.income);
+      expect(income.category.id, 'inc_other');
+
+      final expense = Transaction.fromJson({
+        'id': 't_exp',
+        'title': 'Y',
+        'amount': 1000,
+        'type': 'expense',
+        'categoryId': 'exp_tidak_ada',
+        'date': DateTime(2026, 1, 1).toIso8601String(),
+      });
+      expect(expense.category.type, TransactionType.expense);
+      expect(expense.category.id, 'exp_other');
+    });
+
+    test('CSV impor mengenali kategori custom berdasarkan nama', () {
+      const custom = TransactionCategory(
+        id: 'exp_custom_kopi',
+        name: 'Kopi',
+        icon: Icons.coffee_rounded,
+        color: Colors.brown,
+        type: TransactionType.expense,
+        isCustom: true,
+      );
+
+      final csv = [
+        'ID,Judul,Nominal,Tipe,Kategori,Tanggal,Catatan',
+        't1,Ngopi,20000,expense,Kopi,${DateTime(2026, 1, 5).toIso8601String()},',
+      ].join('\n');
+
+      final preview = ExportImportService().parseCsvBackup(
+        csv,
+        customCategories: const [custom],
+      );
+
+      expect(preview.transactions.single.category.id, custom.id);
+      expect(preview.transactions.single.category.name, 'Kopi');
+    });
+
+    test('reloadData menyinkronkan state setelah impor langsung ke storage',
+        () async {
+      final provider = FinanceProvider();
+      await provider.initialize();
+
+      // Kosongkan data contoh lalu impor kategori custom & transaksi
+      // langsung lewat service (menulis ke storage, bukan lewat provider).
+      for (final t in List.of(provider.allTransactions)) {
+        await provider.deleteTransaction(t.id);
+      }
+
+      const custom = TransactionCategory(
+        id: 'exp_custom_reload',
+        name: 'Kopi',
+        icon: Icons.coffee_rounded,
+        color: Colors.brown,
+        type: TransactionType.expense,
+        isCustom: true,
+      );
+      final tx = Transaction(
+        id: 'tx_reload',
+        title: 'Ngopi',
+        amount: 20000,
+        type: TransactionType.expense,
+        category: custom,
+        date: DateTime.now(),
+      );
+
+      final json = ExportImportService().buildExportJson(
+        [tx],
+        customCategories: const [custom],
+      );
+      final service = ExportImportService();
+      final preview = service.parseJsonBackup(json);
+      await service.applyImport(
+        preview: preview,
+        currentTransactions: const [],
+        strategy: ImportStrategy.merge,
+      );
+
+      // Provider belum tahu sampai reloadData dipanggil.
+      await provider.reloadData();
+
+      expect(provider.allTransactions.length, 1);
+      expect(provider.customCategories.single.id, custom.id);
+      // Kategori custom ter-resolve, bukan jatuh ke "Lainnya".
+      expect(provider.allTransactions.single.category.id, custom.id);
+      expect(provider.getCategoryUsageCount(custom.id), 1);
+    });
+  });
+
   testWidgets(
       'Tombol tambah anggaran kategori membuka pemilih kategori, bukan dialog total',
       (tester) async {

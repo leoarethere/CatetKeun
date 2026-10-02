@@ -662,6 +662,51 @@ class AppLocalizationsId extends AppLocalizations {
   String get languageNameEn => 'English';
 
   @override
+  String get aboutTagline =>
+      'Aplikasi Catetan Keuangan membantu Anda mencatat, mengelola, dan menganalisis pengeluaran serta pemasukan secara mudah dan intuitif.';
+
+  @override
+  String get aboutVersion => 'Versi';
+
+  @override
+  String get aboutDeveloper => 'Pengembang';
+
+  @override
+  String get aboutDeveloperName => 'Leona Dev';
+
+  @override
+  String get aboutEmail => 'Email';
+
+  @override
+  String get aboutWebsite => 'Website';
+
+  @override
+  String get aboutLicense => 'Lisensi';
+
+  @override
+  String get aboutCopyright => 'Hak Cipta';
+
+  @override
+  String get aboutCopyrightValue => '© 2026 Leona';
+
+  @override
+  String get aboutThanks =>
+      'Terima kasih kepada semua library dan framework open‑source yang digunakan dalam pengembangan aplikasi ini, termasuk Flutter, Provider, dan lainnya.';
+
+  @override
+  String get aboutPrivacy => 'Kebijakan Privasi';
+
+  @override
+  String get aboutTerms => 'Syarat Penggunaan';
+
+  @override
+  String get aboutPrivacyPending =>
+      'Kebijakan privasi sedang disiapkan. Data Anda tetap tersimpan hanya di perangkat ini.';
+
+  @override
+  String get aboutTermsPending => 'Syarat penggunaan sedang disiapkan.';
+
+  @override
   String get sampleSalaryTitle => 'Gaji Bulanan';
 
   @override

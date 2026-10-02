@@ -52,7 +52,10 @@ class Transaction {
     };
   }
 
-  factory Transaction.fromJson(Map<String, dynamic> json) {
+  factory Transaction.fromJson(
+    Map<String, dynamic> json, {
+    List<TransactionCategory>? customCategories,
+  }) {
     final catId = json['categoryId'] as String? ?? 'exp_other';
     
     // Handle amount: bisa int atau double (backward compatibility)
@@ -66,12 +69,18 @@ class Transaction {
       throw FormatException('Invalid amount type: ${rawAmount.runtimeType}');
     }
     
+    final type = TransactionType.values.byName(json['type'] as String);
+
     return Transaction(
       id: json['id'] as String,
       title: json['title'] as String,
       amount: amount,
-      type: TransactionType.values.byName(json['type'] as String),
-      category: TransactionCategory.getById(catId),
+      type: type,
+      category: TransactionCategory.getById(
+        catId,
+        customCategories: customCategories,
+        fallbackType: type,
+      ),
       date: DateTime.parse(json['date'] as String),
       note: json['note'] as String?,
     );

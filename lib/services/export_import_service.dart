@@ -42,6 +42,12 @@ class ImportResult {
   final int added;
   final int updated;
   final int skipped;
+
+  /// Anggaran yang benar-benar ikut dipulihkan dari file.
+  final int budgetsImported;
+
+  /// Kategori custom yang benar-benar ikut dipulihkan dari file.
+  final int categoriesImported;
   final List<ExportImportErrorKind> errors;
   final bool success;
 
@@ -50,6 +56,8 @@ class ImportResult {
     required this.added,
     required this.updated,
     required this.skipped,
+    this.budgetsImported = 0,
+    this.categoriesImported = 0,
     this.errors = const [],
     this.success = true,
   });
@@ -118,6 +126,8 @@ class ExportImportService {
     List<Budget> budgets = const [],
     List<TransactionCategory> customCategories = const [],
   }) async {
+    // Selalu lewat buildExportJson supaya format file produksi identik
+    // dengan yang diuji (tidak ada dua sumber kebenaran).
     final jsonString = buildExportJson(
       transactions,
       budgets: budgets,
@@ -151,6 +161,16 @@ class ExportImportService {
 
   /// Ekspor transaksi ke format CSV (untuk Excel/Google Sheets)
   Future<File> exportToCsv(List<Transaction> transactions) async {
+    return _writeToFile(buildExportCsv(transactions), 'catatkeun_export.csv');
+  }
+
+  /// Susun isi CSV (murni, tanpa I/O) - dipakai juga oleh pengujian.
+  ///
+  /// Kolom Tipe ditulis sebagai `income` / `expense` (kode stabil) agar
+  /// file hasil ekspor selalu bisa diimpor kembali, apa pun bahasa aktif
+  /// saat mengekspor. Parser ([_parseCsvRow]) tetap menerima label lokal
+  /// lama (`Pemasukan`/`Pengeluaran`) demi kompatibilitas mundur.
+  String buildExportCsv(List<Transaction> transactions) {
     final buffer = StringBuffer();
 
     // Header CSV
@@ -162,7 +182,7 @@ class ExportImportService {
         _escapeCsv(tx.id),
         _escapeCsv(tx.title),
         tx.amount.toString(),
-        tx.type == TransactionType.income ? 'Pemasukan' : 'Pengeluaran',
+        tx.type.name,
         _escapeCsv(tx.category.name),
         tx.date.toIso8601String(),
         _escapeCsv(tx.note ?? ''),
@@ -170,7 +190,7 @@ class ExportImportService {
       buffer.writeln(row.join(','));
     }
 
-    return _writeToFile(buffer.toString(), 'catatkeun_export.csv');
+    return buffer.toString();
   }
 
   /// Share file ke aplikasi lain (WhatsApp, Email, dll)
@@ -185,8 +205,14 @@ class ExportImportService {
 
   // ==================== IMPORT ====================
 
-  /// Pilih file untuk import (tanpa apply) - return null jika dibatalkan
-  Future<ImportPreview?> pickFileForImport() async {
+  /// Pilih file untuk import (tanpa apply) - return null jika dibatalkan.
+  ///
+  /// [customCategories] adalah kategori custom milik aplikasi saat ini, yang
+  /// dipakai untuk me-resolve nama kategori di file CSV (CSV hanya menyimpan
+  /// nama, bukan ID). Tanpa ini, kategori custom akan jatuh ke "Lainnya".
+  Future<ImportPreview?> pickFileForImport({
+    List<TransactionCategory> customCategories = const [],
+  }) async {
     final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json', 'csv'],
@@ -210,9 +236,17 @@ class ExportImportService {
 
     final format = file.name.toLowerCase().endsWith('.json') ? 'json' : 'csv';
 
+    // Kategori custom dipakai untuk me-resolve kategori transaksi
+    // (JSON: dari file itu sendiri; CSV: dari app), supaya tidak jatuh
+    // ke "Lainnya".
     final parsed = format == 'json'
         ? _parseJsonBackup(content)
-        : _ParsedBackup(transactions: _parseCsv(content));
+        : _ParsedBackup(
+            transactions: _parseCsv(
+              content,
+              customCategories: customCategories,
+            ),
+          );
 
     return _buildPreview(
       fileName: file.name,
@@ -221,16 +255,35 @@ class ExportImportService {
     );
   }
 
+  /// Parse konten CSV backup menjadi preview impor (tanpa I/O).
+  /// Dipublikasikan untuk keperluan pengujian.
+  ImportPreview parseCsvBackup(
+    String content, {
+    String fileName = 'backup.csv',
+    List<TransactionCategory> customCategories = const [],
+  }) {
+    return _buildPreview(
+      fileName: fileName,
+      format: 'csv',
+      parsed: _ParsedBackup(
+        transactions: _parseCsv(
+          content,
+          customCategories: customCategories,
+        ),
+      ),
+    );
+  }
   /// Parse konten JSON backup menjadi preview impor (tanpa I/O).
   /// Dipublikasikan untuk keperluan pengujian.
   ImportPreview parseJsonBackup(
     String content, {
     String fileName = 'backup.json',
+    List<TransactionCategory> customCategories = const [],
   }) {
     return _buildPreview(
       fileName: fileName,
       format: 'json',
-      parsed: _parseJsonBackup(content),
+      parsed: _parseJsonBackup(content, customCategories: customCategories),
     );
   }
 
@@ -350,11 +403,16 @@ class ExportImportService {
 
     // Anggaran & kategori custom (hanya ada di file JSON hasil ekspor
     // versi 2; file lama tidak membawanya sehingga bagian ini dilewati).
+    int budgetsImported = 0;
+    int categoriesImported = 0;
     if (hasCategories) {
-      await _importCustomCategories(preview.customCategories, strategy);
+      categoriesImported = await _importCustomCategories(
+        preview.customCategories,
+        strategy,
+      );
     }
     if (hasBudgets) {
-      await _importBudgets(preview.budgets, strategy);
+      budgetsImported = await _importBudgets(preview.budgets, strategy);
     }
 
     return ImportResult(
@@ -362,17 +420,20 @@ class ExportImportService {
       added: added,
       updated: updated,
       skipped: skipped,
+      budgetsImported: budgetsImported,
+      categoriesImported: categoriesImported,
     );
   }
 
-  Future<void> _importBudgets(
+  /// Impor anggaran, me-return jumlah anggaran efektif setelah impor.
+  Future<int> _importBudgets(
     List<Budget> imported,
     ImportStrategy strategy,
   ) async {
     switch (strategy) {
       case ImportStrategy.replace:
         await _budgetRepository.saveBudgets(imported);
-        break;
+        return imported.length;
 
       case ImportStrategy.merge:
         final current = await _budgetRepository.loadBudgets();
@@ -380,32 +441,35 @@ class ExportImportService {
         for (final b in imported) {
           byId[b.id] = b; // data dari file menang
         }
-        await _budgetRepository.saveBudgets(byId.values.toList());
-        break;
+        final merged = byId.values.toList();
+        await _budgetRepository.saveBudgets(merged);
+        return merged.length;
 
       case ImportStrategy.skipExisting:
         final current = await _budgetRepository.loadBudgets();
         final existingIds = current.map((b) => b.id).toSet();
-        await _budgetRepository.saveBudgets([
+        final merged = [
           ...current,
           ...imported.where((b) => !existingIds.contains(b.id)),
-        ]);
-        break;
+        ];
+        await _budgetRepository.saveBudgets(merged);
+        return merged.length;
     }
   }
 
-  Future<void> _importCustomCategories(
+  /// Impor kategori custom, me-return jumlah kategori efektif setelah impor.
+  Future<int> _importCustomCategories(
     List<TransactionCategory> imported,
     ImportStrategy strategy,
   ) async {
     // Hanya kategori custom yang bisa disimpan repository.
     final incoming = imported.where((c) => c.isCustom).toList();
-    if (incoming.isEmpty) return;
+    if (incoming.isEmpty) return 0;
 
     switch (strategy) {
       case ImportStrategy.replace:
         await _categoryRepository.saveCustomCategories(incoming);
-        break;
+        return incoming.length;
 
       case ImportStrategy.merge:
         final current = await _categoryRepository.loadCustomCategories();
@@ -415,17 +479,19 @@ class ExportImportService {
         for (final c in incoming) {
           byId[c.id] = c; // data dari file menang
         }
-        await _categoryRepository.saveCustomCategories(byId.values.toList());
-        break;
+        final merged = byId.values.toList();
+        await _categoryRepository.saveCustomCategories(merged);
+        return merged.length;
 
       case ImportStrategy.skipExisting:
         final current = await _categoryRepository.loadCustomCategories();
         final existingIds = current.map((c) => c.id).toSet();
-        await _categoryRepository.saveCustomCategories([
+        final merged = [
           ...current,
           ...incoming.where((c) => !existingIds.contains(c.id)),
-        ]);
-        break;
+        ];
+        await _categoryRepository.saveCustomCategories(merged);
+        return merged.length;
     }
   }
 
@@ -448,7 +514,10 @@ class ExportImportService {
     return value;
   }
 
-  _ParsedBackup _parseJsonBackup(String content) {
+  _ParsedBackup _parseJsonBackup(
+    String content, {
+    List<TransactionCategory> customCategories = const [],
+  }) {
     dynamic decoded;
     try {
       decoded = jsonDecode(content);
@@ -461,28 +530,47 @@ class ExportImportService {
         (decoded.containsKey('transactions') ||
             decoded.containsKey('budgets') ||
             decoded.containsKey('customCategories'))) {
+      final categories = _parseCategoryList(decoded['customCategories']);
+      final effectiveCustoms =
+          customCategories.isEmpty ? categories : customCategories;
       return _ParsedBackup(
         transactions: decoded['transactions'] is List
-            ? _parseTransactionList(decoded['transactions'] as List<dynamic>)
+            ? _parseTransactionList(
+                decoded['transactions'] as List<dynamic>,
+                customCategories: effectiveCustoms,
+              )
             : const [],
         budgets: _parseBudgetList(decoded['budgets']),
-        customCategories: _parseCategoryList(decoded['customCategories']),
+        customCategories: categories,
       );
     }
 
     // Handle format lama (plain array)
     if (decoded is List<dynamic>) {
-      return _ParsedBackup(transactions: _parseTransactionList(decoded));
+      return _ParsedBackup(
+        transactions: _parseTransactionList(
+          decoded,
+          customCategories: customCategories,
+        ),
+      );
     }
 
     throw const ExportImportException(ExportImportErrorKind.invalidJson);
   }
 
-  List<Transaction> _parseTransactionList(List<dynamic> list) {
+  List<Transaction> _parseTransactionList(
+    List<dynamic> list, {
+    List<TransactionCategory> customCategories = const [],
+  }) {
     final transactions = <Transaction>[];
     for (final item in list) {
       try {
-        transactions.add(Transaction.fromJson(item as Map<String, dynamic>));
+        transactions.add(
+          Transaction.fromJson(
+            item as Map<String, dynamic>,
+            customCategories: customCategories,
+          ),
+        );
       } catch (e) {
         debugPrint('Skip record rusak: $e');
         // Continue - skip record yang rusak
@@ -519,7 +607,10 @@ class ExportImportService {
     return categories;
   }
 
-  List<Transaction> _parseCsv(String content) {
+  List<Transaction> _parseCsv(
+    String content, {
+    List<TransactionCategory> customCategories = const [],
+  }) {
     final lines = content.split('\n').where((l) => l.trim().isNotEmpty).toList();
     if (lines.length < 2) {
       throw const ExportImportException(ExportImportErrorKind.emptyCsv);
@@ -529,7 +620,10 @@ class ExportImportService {
     final transactions = <Transaction>[];
     for (int i = 1; i < lines.length; i++) {
       try {
-        final tx = _parseCsvRow(lines[i]);
+        final tx = _parseCsvRow(
+          lines[i],
+          customCategories: customCategories,
+        );
         if (tx != null) {
           transactions.add(tx);
         }
@@ -541,7 +635,10 @@ class ExportImportService {
     return transactions;
   }
 
-  Transaction? _parseCsvRow(String line) {
+  Transaction? _parseCsvRow(
+    String line, {
+    List<TransactionCategory> customCategories = const [],
+  }) {
     final columns = _parseCsvLine(line);
     if (columns.length < 7) return null;
 
@@ -564,8 +661,12 @@ class ExportImportService {
     final type =
         isIncome ? TransactionType.income : TransactionType.expense;
 
-    // Cari kategori berdasarkan nama
-    final category = _findCategoryByName(categoryName, type);
+    // Cari kategori berdasarkan nama (termasuk kategori custom).
+    final category = _findCategoryByName(
+      categoryName,
+      type,
+      customCategories: customCategories,
+    );
 
     return Transaction(
       id: id.isEmpty ? 'imported_${DateTime.now().millisecondsSinceEpoch}' : id,
@@ -607,20 +708,28 @@ class ExportImportService {
     return result;
   }
 
-  TransactionCategory _findCategoryByName(String name, TransactionType type) {
-    final categories = type == TransactionType.income
-        ? TransactionCategory.defaultIncomeCategories
-        : TransactionCategory.defaultExpenseCategories;
+  TransactionCategory _findCategoryByName(
+    String name,
+    TransactionType type, {
+    List<TransactionCategory> customCategories = const [],
+  }) {
+    // Cari kategori custom dulu (berdasarkan nama), lalu default.
+    final candidates = <TransactionCategory>[
+      ...customCategories.where((c) => c.type == type),
+      ...(type == TransactionType.income
+          ? TransactionCategory.defaultIncomeCategories
+          : TransactionCategory.defaultExpenseCategories),
+    ];
 
-    // Cari exact match dulu
-    for (final cat in categories) {
+    // Cari exact match dulu (case-insensitive)
+    for (final cat in candidates) {
       if (cat.name.toLowerCase() == name.toLowerCase()) {
         return cat;
       }
     }
 
-    // Fallback ke kategori "Lainnya"
-    return categories.last;
+    // Fallback ke kategori "Lainnya" yang sesuai tipe.
+    return candidates.last;
   }
 }
 

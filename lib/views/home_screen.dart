@@ -5,12 +5,11 @@ import '../providers/finance_provider.dart';
 import '../utils/date_helper.dart';
 import 'add_edit_transaction_screen.dart';
 import 'widgets/app_logo.dart';
-import 'budget_screen.dart';
-import 'category_management_screen.dart';
+import 'widgets/app_overflow_menu.dart';
+import 'widgets/app_page_route.dart';
 import 'statistics_screen.dart';
 import 'widgets/balance_card.dart';
 import 'widgets/empty_state.dart';
-import 'widgets/export_import_sheet.dart';
 import 'widgets/filter_bar.dart';
 import 'widgets/transaction_item_tile.dart';
 import 'about_screen.dart';
@@ -37,49 +36,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _openAddTransaction(BuildContext context, [Transaction? tx]) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      AppPageRoute(
         builder: (_) => AddEditTransactionScreen(
           provider: widget.provider,
           initialTransaction: tx,
         ),
-      ),
-    );
-  }
-
-  void _showLanguageDialog(BuildContext context, AppLocalizations l10n) {
-    final provider = widget.provider;
-    final current = provider.locale.languageCode;
-
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.languageSetting),
-        content: RadioGroup<String>(
-          groupValue: current,
-          onChanged: (v) {
-            provider.setLocale(v!);
-            Navigator.of(ctx).pop();
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<String>(
-                value: 'id',
-                title: Text(l10n.languageNameId),
-              ),
-              RadioListTile<String>(
-                value: 'en',
-                title: Text(l10n.languageNameEn),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(l10n.close),
-          ),
-        ],
       ),
     );
   }
@@ -89,11 +50,23 @@ class _HomeScreenState extends State<HomeScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: _currentNavIndex == 0
-          ? _buildTransactionsTab(context, l10n)
-          : _currentNavIndex == 1
-              ? StatisticsScreen(provider: widget.provider)
-              : const AboutScreen(),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+        child: KeyedSubtree(
+          key: ValueKey(_currentNavIndex),
+          child: _currentNavIndex == 0
+              ? _buildTransactionsTab(context, l10n)
+              : _currentNavIndex == 1
+                  ? StatisticsScreen(provider: widget.provider)
+                  : const AboutScreen(),
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -131,7 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTransactionsTab(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final provider = widget.provider;
 
     return CustomScrollView(
@@ -179,95 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
             ),
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert_rounded),
-              tooltip: l10n.moreMenu,
-              onSelected: (value) {
-                switch (value) {
-                  case 'budget':
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => BudgetScreen(provider: provider),
-                      ),
-                    );
-                    break;
-                  case 'categories':
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => CategoryManagementScreen(
-                          provider: provider,
-                        ),
-                      ),
-                    );
-                    break;
-                  case 'export_import':
-                    ExportImportSheet.show(context, provider);
-                    break;
-                  case 'theme':
-                    provider.toggleTheme();
-                    break;
-                  case 'language':
-                    _showLanguageDialog(context, l10n);
-                    break;
-                }
-              },
-              itemBuilder: (ctx) => [
-                PopupMenuItem(
-                  value: 'budget',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.savings_outlined),
-                      const SizedBox(width: 12),
-                      Text(l10n.manageBudgetMenu),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'categories',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.category_outlined),
-                      const SizedBox(width: 12),
-                      Text(l10n.manageCategoryMenu),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'export_import',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.import_export_rounded),
-                      const SizedBox(width: 12),
-                      Text(l10n.exportImportMenu),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'theme',
-                  child: Row(
-                    children: [
-                      Icon(
-                        isDark
-                            ? Icons.light_mode_outlined
-                            : Icons.dark_mode_outlined,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(isDark ? l10n.lightMode : l10n.darkMode),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'language',
-                  child: Row(
-                    children: [
-                      const Icon(Icons.translate_outlined),
-                      const SizedBox(width: 12),
-                      Text(l10n.languageSetting),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            AppOverflowMenu(provider: provider),
             const SizedBox(width: 8),
           ],
         ),

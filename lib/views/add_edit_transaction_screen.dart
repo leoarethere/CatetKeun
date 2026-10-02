@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../l10n/category_l10n.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../providers/finance_provider.dart';
+import '../utils/currency_helper.dart';
 import '../utils/date_helper.dart';
+import '../utils/thousands_input_formatter.dart';
 
 class AddEditTransactionScreen extends StatefulWidget {
   final FinanceProvider provider;
@@ -36,17 +37,28 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   @override
   void initState() {
     super.initState();
+    final provider = widget.provider;
     final initial = widget.initialTransaction;
 
     if (initial != null) {
       _selectedType = initial.type;
       _titleController = TextEditingController(text: initial.title);
       _amountController = TextEditingController(
-        text: initial.amount.toStringAsFixed(0),
+        text: CurrencyHelper.formatNumber(initial.amount),
       );
       _noteController = TextEditingController(text: initial.note ?? '');
       _selectedDate = initial.date;
-      _selectedCategory = initial.category;
+      // Re-resolve lewat provider: kategori custom hanya dikenali lewat
+      // daftar custom saat ini, bukan objek kategori yang dibawa transaksi.
+      _selectedCategory = provider.getCategoryById(initial.category.id);
+      // Kalau ID kategorinya sudah tidak dikenal (yatim), kembalikan ke
+      // kategori default pertama agar chip kategori tetap valid.
+      if (!provider.hasCategory(initial.category.id)) {
+        final fallbacks = provider.getCategoriesByType(_selectedType);
+        if (fallbacks.isNotEmpty) {
+          _selectedCategory = fallbacks.first;
+        }
+      }
     } else {
       _selectedType = TransactionType.expense;
       _titleController = TextEditingController();
@@ -107,8 +119,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final l10n = AppLocalizations.of(context)!;
-    final amount = int.tryParse(_amountController.text.replaceAll('.', '')) ?? 0;
-    if (amount <= 0) {
+    final amount = CurrencyHelper.parse(_amountController.text);
+    if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.amountMustBePositive)),
       );
@@ -228,8 +240,8 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
+                inputFormatters: const [
+                  ThousandsSeparatorInputFormatter(),
                 ],
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,

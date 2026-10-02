@@ -659,6 +659,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageNameEn => 'English';
 
   @override
+  String get aboutTagline =>
+      'Catetan Keuangan helps you record, manage, and analyze expenses and income easily and intuitively.';
+
+  @override
+  String get aboutVersion => 'Version';
+
+  @override
+  String get aboutDeveloper => 'Developer';
+
+  @override
+  String get aboutDeveloperName => 'Leona Dev';
+
+  @override
+  String get aboutEmail => 'Email';
+
+  @override
+  String get aboutWebsite => 'Website';
+
+  @override
+  String get aboutLicense => 'License';
+
+  @override
+  String get aboutCopyright => 'Copyright';
+
+  @override
+  String get aboutCopyrightValue => '© 2026 Leona';
+
+  @override
+  String get aboutThanks =>
+      'Thanks to all open-source libraries and frameworks used in building this app, including Flutter, Provider, and others.';
+
+  @override
+  String get aboutPrivacy => 'Privacy Policy';
+
+  @override
+  String get aboutTerms => 'Terms of Service';
+
+  @override
+  String get aboutPrivacyPending =>
+      'The privacy policy is being prepared. Your data still stays only on this device.';
+
+  @override
+  String get aboutTermsPending => 'The terms of service are being prepared.';
+
+  @override
   String get sampleSalaryTitle => 'Monthly Salary';
 
   @override

@@ -22,12 +22,32 @@ import '../models/transaction.dart';
 class TransactionRepository {
   static const String _storageKey = 'financial_records_key_v1';
 
-  Future<List<Transaction>> loadTransactions() async {
+  /// Penanda "user sudah pernah punya data".
+  ///
+  /// Tanpa penanda ini, daftar kosong (`[]`) tidak bisa dibedakan dari
+  /// "belum pernah dibuka", sehingga data contoh akan muncul kembali setiap
+  /// kali user menghapus semua transaksinya lalu membuka ulang aplikasi.
+  static const String _initializedKey = 'financial_records_initialized_v1';
+
+  /// Muat transaksi dengan resolusi kategori custom.
+  ///
+  /// Kategori custom tidak tersimpan di dalam file transaksi (hanya
+  /// `categoryId`), jadi tanpa [customCategories] transaksi yang memakai
+  /// kategori custom akan jatuh ke "Lainnya" setiap aplikasi dibuka ulang.
+  Future<List<Transaction>> loadTransactions({
+    List<TransactionCategory> customCategories = const [],
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString(_storageKey);
+    final wasInitialized = prefs.getBool(_initializedKey) ?? false;
 
     if (jsonString == null || jsonString.isEmpty) {
-      // Sediakan initial sample data yang realistis untuk pengalaman pertama pengguna
+      // First-run: beri data contoh sekali saja. Setelah penanda ada,
+      // daftar yang kosong diperlakukan sebagai "user memang punya nol
+      // transaksi", bukan alasan untuk menanam data contoh lagi.
+      if (wasInitialized) {
+        return [];
+      }
       final initialData = _getInitialSampleData();
       await saveTransactions(initialData);
       return initialData;
@@ -43,7 +63,10 @@ class TransactionRepository {
       for (int i = 0; i < decodedList.length; i++) {
         try {
           final item = decodedList[i] as Map<String, dynamic>;
-          final tx = Transaction.fromJson(item);
+          final tx = Transaction.fromJson(
+            item,
+            customCategories: customCategories,
+          );
           validTransactions.add(tx);
         } catch (e) {
           // Catat record yang rusak tapi jangan gagalkan seluruh load
@@ -75,7 +98,11 @@ class TransactionRepository {
       await prefs.setString(backupKey, jsonString);
       debugPrint('Error: JSON corrupt total. Backup disimpan di: $backupKey');
       debugPrint('Error detail: $e');
-      
+
+      // Samakan dengan jalur first-run: tandai agar pemulihan data contoh
+      // berikutnya tidak dianggap sebagai first-run berulang.
+      await prefs.setBool(_initializedKey, true);
+
       // Return sample data sebagai fallback terakhir, tapi user harusnya tahu
       return _getInitialSampleData();
     }
@@ -85,6 +112,8 @@ class TransactionRepository {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = transactions.map((t) => t.toJson()).toList();
     await prefs.setString(_storageKey, jsonEncode(jsonList));
+    // Simpan penanda agar data contoh tidak muncul kembali di lain waktu.
+    await prefs.setBool(_initializedKey, true);
   }
 
   List<Transaction> _getInitialSampleData() {

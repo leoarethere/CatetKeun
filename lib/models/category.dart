@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 
-const List<IconData> _availableIcons = [
+/// Daftar ikon yang boleh dipakai kategori custom.
+///
+/// Daftar ini dipakai BERSAMA oleh pemilih ikon (UI) dan resolver
+/// [iconFromCodePoint] (load dari storage). Keduanya wajib memakai daftar
+/// yang sama: kalau picker menawarkan ikon yang tidak dikenal resolver,
+/// ikon tersebut akan hilang (jatuh ke ikon generik) setiap aplikasi
+/// dibuka ulang.
+const List<IconData> availableCategoryIcons = [
   Icons.restaurant,
   Icons.directions_car,
   Icons.shopping_bag,
@@ -16,9 +23,34 @@ const List<IconData> _availableIcons = [
   Icons.sell,
   Icons.redeem,
   Icons.savings,
+  // Tambahan khusus kategori custom (di luar ikon kategori bawaan).
+  Icons.shopping_cart_rounded,
+  Icons.restaurant_rounded,
+  Icons.directions_car_rounded,
+  Icons.home_rounded,
+  Icons.health_and_safety_rounded,
+  Icons.school_rounded,
+  Icons.pets_rounded,
+  Icons.flight_rounded,
+  Icons.coffee_rounded,
+  Icons.movie_rounded,
+  Icons.music_note_rounded,
+  Icons.fitness_center_rounded,
+  Icons.checkroom_rounded,
+  Icons.phone_iphone_rounded,
+  Icons.laptop_mac_rounded,
+  Icons.card_giftcard_rounded,
+  Icons.favorite_rounded,
+  Icons.star_rounded,
+  Icons.savings_rounded,
+  Icons.trending_up_rounded,
+  Icons.business_center_rounded,
+  Icons.payments_rounded,
+  Icons.account_balance_rounded,
+  Icons.card_membership_rounded,
 ];
 
-IconData iconFromCodePoint(int cp) => _availableIcons.firstWhere(
+IconData iconFromCodePoint(int cp) => availableCategoryIcons.firstWhere(
       (i) => i.codePoint == cp,
       orElse: () => Icons.category_rounded);
 
@@ -252,10 +284,16 @@ final icon = iconFromCodePoint(iconCodePoint);
         ...defaultIncomeCategories,
       ];
 
-  /// Ambil kategori by ID dari daftar yang diberikan
-  /// (fallback ke default jika tidak ditemukan)
-  static TransactionCategory getById(String id,
-      {List<TransactionCategory>? customCategories}) {
+  /// Ambil kategori by ID dari daftar yang diberikan.
+  ///
+  /// [fallbackType] menentukan kategori "Lainnya" mana yang dipakai saat ID
+  /// tidak ditemukan. Tanpa [fallbackType] (mis. lookup UI yang tidak tahu
+  /// tipenya), fallback ke "Lainnya" pengeluaran seperti perilaku lama.
+  static TransactionCategory getById(
+    String id, {
+    List<TransactionCategory>? customCategories,
+    TransactionType? fallbackType,
+  }) {
     // Cek custom categories dulu
     if (customCategories != null) {
       for (final c in customCategories) {
@@ -268,7 +306,10 @@ final icon = iconFromCodePoint(iconCodePoint);
       if (c.id == id) return c;
     }
 
-    // Fallback ke "Lainnya"
+    // Fallback ke "Lainnya" yang sesuai tipe (pengeluaran jika tidak tahu).
+    if (fallbackType == TransactionType.income) {
+      return defaultIncomeCategories.last;
+    }
     return defaultExpenseCategories.last;
   }
 

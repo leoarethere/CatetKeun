@@ -1226,6 +1226,90 @@ abstract class AppLocalizations {
   /// **'English'**
   String get languageNameEn;
 
+  /// No description provided for @aboutTagline.
+  ///
+  /// In id, this message translates to:
+  /// **'Aplikasi Catetan Keuangan membantu Anda mencatat, mengelola, dan menganalisis pengeluaran serta pemasukan secara mudah dan intuitif.'**
+  String get aboutTagline;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In id, this message translates to:
+  /// **'Versi'**
+  String get aboutVersion;
+
+  /// No description provided for @aboutDeveloper.
+  ///
+  /// In id, this message translates to:
+  /// **'Pengembang'**
+  String get aboutDeveloper;
+
+  /// No description provided for @aboutDeveloperName.
+  ///
+  /// In id, this message translates to:
+  /// **'Leona Dev'**
+  String get aboutDeveloperName;
+
+  /// No description provided for @aboutEmail.
+  ///
+  /// In id, this message translates to:
+  /// **'Email'**
+  String get aboutEmail;
+
+  /// No description provided for @aboutWebsite.
+  ///
+  /// In id, this message translates to:
+  /// **'Website'**
+  String get aboutWebsite;
+
+  /// No description provided for @aboutLicense.
+  ///
+  /// In id, this message translates to:
+  /// **'Lisensi'**
+  String get aboutLicense;
+
+  /// No description provided for @aboutCopyright.
+  ///
+  /// In id, this message translates to:
+  /// **'Hak Cipta'**
+  String get aboutCopyright;
+
+  /// No description provided for @aboutCopyrightValue.
+  ///
+  /// In id, this message translates to:
+  /// **'© 2026 Leona'**
+  String get aboutCopyrightValue;
+
+  /// No description provided for @aboutThanks.
+  ///
+  /// In id, this message translates to:
+  /// **'Terima kasih kepada semua library dan framework open‑source yang digunakan dalam pengembangan aplikasi ini, termasuk Flutter, Provider, dan lainnya.'**
+  String get aboutThanks;
+
+  /// No description provided for @aboutPrivacy.
+  ///
+  /// In id, this message translates to:
+  /// **'Kebijakan Privasi'**
+  String get aboutPrivacy;
+
+  /// No description provided for @aboutTerms.
+  ///
+  /// In id, this message translates to:
+  /// **'Syarat Penggunaan'**
+  String get aboutTerms;
+
+  /// No description provided for @aboutPrivacyPending.
+  ///
+  /// In id, this message translates to:
+  /// **'Kebijakan privasi sedang disiapkan. Data Anda tetap tersimpan hanya di perangkat ini.'**
+  String get aboutPrivacyPending;
+
+  /// No description provided for @aboutTermsPending.
+  ///
+  /// In id, this message translates to:
+  /// **'Syarat penggunaan sedang disiapkan.'**
+  String get aboutTermsPending;
+
   /// No description provided for @sampleSalaryTitle.
   ///
   /// In id, this message translates to:

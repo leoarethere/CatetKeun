@@ -7,12 +7,12 @@ import '../providers/finance_provider.dart';
 import '../utils/currency_helper.dart';
 import '../utils/date_helper.dart';
 import 'budget_screen.dart';
-import 'category_management_screen.dart';
 import 'widgets/app_logo.dart';
+import 'widgets/app_overflow_menu.dart';
+import 'widgets/app_page_route.dart';
 import 'widgets/category_pie_chart.dart';
 import 'widgets/empty_state.dart';
 import 'widgets/monthly_trend_chart.dart';
-import 'widgets/export_import_sheet.dart';
 
 /// Tampilan statistik: list atau chart
 enum StatsView { list, chart }
@@ -60,102 +60,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         ),
         centerTitle: false,
       actions: [
-          // Overflow menu similar to HomeScreen
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded),
-            tooltip: l10n.moreMenu,
-            onSelected: (value) {
-              final provider = widget.provider;
-              switch (value) {
-                case 'budget':
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => BudgetScreen(provider: provider)));
-                  break;
-                case 'categories':
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => CategoryManagementScreen(provider: provider)));
-                  break;
-                case 'export_import':
-                  ExportImportSheet.show(context, provider);
-                  break;
-                case 'theme':
-                  provider.toggleTheme();
-                  break;
-                case 'language':
-                  final l10nLocal = AppLocalizations.of(context)!;
-                  final current = provider.locale.languageCode;
-                  showDialog<void>(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: Text(l10nLocal.languageSetting),
-                      content: RadioGroup<String>(
-                        groupValue: current,
-                        onChanged: (v) {
-                          provider.setLocale(v!);
-                          Navigator.of(ctx).pop();
-                        },
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            RadioListTile<String>(value: 'id', title: Text(l10nLocal.languageNameId)),
-                            RadioListTile<String>(value: 'en', title: Text(l10nLocal.languageNameEn)),
-                          ],
-                        ),
-                      ),
-                      actions: [
-                        TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10nLocal.close)),
-                      ],
-                    ),
-                  );
-                  break;
-              }
-            },
-                itemBuilder: (ctx) {
-                  final isDark = theme.brightness == Brightness.dark;
-                  return [
-                    PopupMenuItem<String>(
-                      value: 'budget',
-                      child: Row(children: [
-                        const Icon(Icons.savings_outlined),
-                        const SizedBox(width: 12),
-                        Text(l10n.manageBudgetMenu),
-                      ]),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'categories',
-                      child: Row(children: [
-                        const Icon(Icons.category_outlined),
-                        const SizedBox(width: 12),
-                        Text(l10n.manageCategoryMenu),
-                      ]),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'export_import',
-                      child: Row(children: [
-                        const Icon(Icons.import_export_rounded),
-                        const SizedBox(width: 12),
-                        Text(l10n.exportImportMenu),
-                      ]),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'theme',
-                      child: Row(children: [
-                        Icon(isDark
-                            ? Icons.light_mode_outlined
-                            : Icons.dark_mode_outlined),
-                        const SizedBox(width: 12),
-                        Text(isDark ? l10n.lightMode : l10n.darkMode),
-                      ]),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'language',
-                      child: Row(children: [
-                        const Icon(Icons.translate_outlined),
-                        const SizedBox(width: 12),
-                        Text(l10n.languageSetting),
-                      ]),
-                    ),
-                  ];
-                },
-          ),
+          // Menu overflow bersama (sama seperti HomeScreen)
+          AppOverflowMenu(provider: provider),
         ],
       ),
       body: SafeArea(
@@ -401,13 +307,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           const SizedBox(height: 12),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: stat.percentage / 100.0,
-                              minHeight: 8,
-                              backgroundColor:
-                                  colorScheme.surfaceContainerHighest,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                stat.category.color,
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween(
+                                begin: 0,
+                                end: stat.percentage / 100.0,
+                              ),
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeOutCubic,
+                              builder: (context, value, _) =>
+                                  LinearProgressIndicator(
+                                value: value,
+                                minHeight: 8,
+                                backgroundColor:
+                                    colorScheme.surfaceContainerHighest,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  stat.category.color,
+                                ),
                               ),
                             ),
                           ),
@@ -549,7 +464,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           InkWell(
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(
+                AppPageRoute(
                   builder: (_) => BudgetScreen(provider: provider),
                 ),
               );
@@ -671,11 +586,19 @@ class _BudgetMiniCard extends StatelessWidget {
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: (progress.percentage / 100).clamp(0.0, 1.0),
-              minHeight: 6,
-              backgroundColor: colorScheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(
+                begin: 0,
+                end: (progress.percentage / 100).clamp(0.0, 1.0),
+              ),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                minHeight: 6,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+              ),
             ),
           ),
           const SizedBox(height: 6),

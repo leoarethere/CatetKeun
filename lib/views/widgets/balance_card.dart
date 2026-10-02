@@ -95,11 +95,12 @@ class BalanceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            CurrencyHelper.format(balance),
+          // Saldo ber-animasi count-up saat berpindah bulan/data berubah.
+          _AnimatedAmount(
+            amount: balance,
+            color: balance >= 0 ? colorScheme.onSurface : Colors.redAccent,
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: balance >= 0 ? colorScheme.onSurface : Colors.redAccent,
               letterSpacing: -0.5,
             ),
           ),
@@ -186,6 +187,38 @@ class BalanceCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Teks nominal yang ber-animasi count-up saat nilainya berubah.
+///
+/// Memakai [TweenAnimationBuilder] sehingga saat [amount] berganti (misal
+/// user pindah bulan), angka bergulir mulus dari nilai lama ke baru, bukan
+/// langsung melompat.
+class _AnimatedAmount extends StatelessWidget {
+  final int amount;
+  final Color color;
+  final TextStyle? style;
+
+  const _AnimatedAmount({
+    required this.amount,
+    required this.color,
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: amount.toDouble()),
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, _) {
+        return Text(
+          CurrencyHelper.format(value.round()),
+          style: style?.copyWith(color: color),
+        );
+      },
     );
   }
 }

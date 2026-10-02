@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:catat_keuangan/main.dart';
@@ -66,5 +67,40 @@ void main() {
 
     expect(find.text('Transaction History'), findsOneWidget);
     expect(provider.locale.languageCode, 'en');
+  });
+
+  testWidgets('About screen ikut berbahasa dan tombolnya berfungsi',
+      (tester) async {
+    final provider = FinanceProvider();
+    await provider.initialize();
+
+    await tester.pumpWidget(CatetKeunApp(provider: provider));
+    await tester.pumpAndSettle();
+
+    // Buka tab Tentang.
+    await tester.tap(find.text('Tentang'));
+    await tester.pumpAndSettle();
+
+    // Teks deskripsi dalam bahasa Indonesia tampil.
+    expect(find.textContaining('Catetan Keuangan membantu Anda'), findsOneWidget);
+
+    // Tombol Kebijakan Privasi tidak lagi mati: membuka dialog penjelasan.
+    await tester.scrollUntilVisible(find.text('Kebijakan Privasi'), 200);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kebijakan Privasi'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Kebijakan privasi sedang disiapkan'),
+        findsOneWidget);
+    await tester.tap(find.text('Tutup'));
+    await tester.pumpAndSettle();
+
+    // Ganti ke bahasa Inggris, teks About ikut berubah.
+    await provider.setLocale('en');
+    await tester.pumpAndSettle();
+
+    // Scroll kembali ke atas karena ListView membuang item di luar layar.
+    await tester.drag(find.byType(ListView), const Offset(0, 600));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('helps you record, manage'), findsOneWidget);
   });
 }
