@@ -5,6 +5,7 @@ import 'l10n/generated/app_localizations.dart';
 import 'providers/finance_provider.dart';
 import 'utils/date_helper.dart';
 import 'views/home_screen.dart';
+import 'views/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,13 +16,23 @@ void main() async {
   final financeProvider = FinanceProvider();
   await financeProvider.initialize();
 
-  runApp(CatetKeunApp(provider: financeProvider));
+  runApp(CatetKeunApp(provider: financeProvider, enableSplash: true));
 }
 
 class CatetKeunApp extends StatelessWidget {
   final FinanceProvider provider;
 
-  const CatetKeunApp({super.key, required this.provider});
+  /// Tampilkan splash ber-animasi sebelum Home.
+  ///
+  /// Default `false` agar widget test bisa langsung menguji Home tanpa
+  /// menunggu durasi splash. Entry point produksi ([main]) mengaktifkannya.
+  final bool enableSplash;
+
+  const CatetKeunApp({
+    super.key,
+    required this.provider,
+    this.enableSplash = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,9 +84,60 @@ class CatetKeunApp extends StatelessWidget {
               scrolledUnderElevation: 2,
             ),
           ),
-          home: HomeScreen(provider: provider),
+          home: AppRoot(
+            provider: provider,
+            enableSplash: enableSplash,
+          ),
         );
       },
+    );
+  }
+}
+
+/// Membungkus splash → Home dengan transisi fade yang halus.
+///
+/// Dipisah dari [CatetKeunApp] supaya state "sedang splash" tidak membangun
+/// ulang seluruh `MaterialApp` saat tema/bahasa berubah.
+class AppRoot extends StatefulWidget {
+  final FinanceProvider provider;
+  final bool enableSplash;
+
+  const AppRoot({
+    super.key,
+    required this.provider,
+    this.enableSplash = false,
+  });
+
+  @override
+  State<AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends State<AppRoot> {
+  late bool _showSplash;
+
+  @override
+  void initState() {
+    super.initState();
+    _showSplash = widget.enableSplash;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      child: _showSplash
+          ? SplashScreen(
+              key: const ValueKey('splash'),
+              onFinished: () {
+                if (mounted) setState(() => _showSplash = false);
+              },
+            )
+          : HomeScreen(
+              key: const ValueKey('home'),
+              provider: widget.provider,
+            ),
     );
   }
 }

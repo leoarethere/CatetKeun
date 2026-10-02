@@ -8,10 +8,54 @@ import 'package:catat_keuangan/main.dart';
 import 'package:catat_keuangan/models/category.dart';
 import 'package:catat_keuangan/providers/finance_provider.dart';
 import 'package:catat_keuangan/views/widgets/category_pie_chart.dart';
+import 'package:catat_keuangan/views/splash_screen.dart';
+import 'package:catat_keuangan/views/home_screen.dart';
+import 'package:catat_keuangan/views/widgets/app_logo.dart';
 
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+  });
+
+  testWidgets('Splash tampil saat enableSplash lalu berlanjut ke Home',
+      (WidgetTester tester) async {
+    final provider = FinanceProvider();
+    await provider.initialize();
+
+    await tester.pumpWidget(
+      CatetKeunApp(provider: provider, enableSplash: true),
+    );
+    // Frame pertama: splash terlihat, Home belum.
+    await tester.pump();
+    expect(find.byType(SplashScreen), findsOneWidget);
+    expect(find.byType(HomeScreen), findsNothing);
+
+    // Latar splash memakai warna brand.
+    final scaffold = tester.widget<Scaffold>(
+      find.descendant(
+        of: find.byType(SplashScreen),
+        matching: find.byType(Scaffold),
+      ),
+    );
+    expect(scaffold.backgroundColor, AppLogo.brandColor);
+
+    // Setelah durasi splash + transisi, Home tampil.
+    await tester.pump(const Duration(milliseconds: 1900));
+    await tester.pumpAndSettle();
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(SplashScreen), findsNothing);
+  });
+
+  testWidgets('Tanpa enableSplash, langsung tampil Home (tanpa splash)',
+      (WidgetTester tester) async {
+    final provider = FinanceProvider();
+    await provider.initialize();
+
+    await tester.pumpWidget(CatetKeunApp(provider: provider));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SplashScreen), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
   });
 
   testWidgets('App renders correctly and displays title and balance', (WidgetTester tester) async {
