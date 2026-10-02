@@ -27,11 +27,6 @@
 - 🔲 Notifikasi pengingat budget
 - 🔲 Enkripsi data lokal
 
-## 📱 Screenshots
-
-<!-- Tambahkan screenshot di sini -->
-<!-- ![Home Screen](screenshots/home.png) -->
-
 ## 🏗️ Arsitektur
 
 ### Struktur Proyek
