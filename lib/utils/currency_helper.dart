@@ -7,22 +7,41 @@ class CurrencyHelper {
   /// Catatan: simbol mata uang selalu Rp karena aplikasi ini
   /// khusus untuk pencatatan keuangan Rupiah. Locale hanya
   /// memengaruhi pemisah ribuan (id: 1.450.000 / en: 1,450,000).
-  static String locale = 'id';
+  static String _locale = 'id';
 
-  /// Pemisah ribuan sesuai locale aktif ('.' untuk id, ',' untuk en).
-  static String get groupSeparator => locale == 'en' ? ',' : '.';
+  static String get locale => _locale;
 
-  static NumberFormat _formatterFor(String locale) {
-    final numberLocale = locale == 'en' ? 'en_US' : 'id_ID';
-    return NumberFormat.currency(
-      locale: numberLocale,
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
+  static set locale(String value) {
+    if (_locale != value) {
+      _locale = value;
+      _cachedFormatter = null;
+      _cachedFormatterLocale = null;
+    }
   }
 
+  /// NumberFormat di-cache karena pembuatannya mahal (membaca data ICU).
+  /// Sebelumnya setiap panggilan format() membuat instance baru, yang
+  /// menyebabkan jank saat scroll (dipanggil per tile per frame).
+  static NumberFormat? _cachedFormatter;
+  static String? _cachedFormatterLocale;
+
+  static NumberFormat _formatter() {
+    final key = _locale == 'en' ? 'en_US' : 'id_ID';
+    if (_cachedFormatter == null || _cachedFormatterLocale != key) {
+      _cachedFormatter = NumberFormat.currency(
+        locale: key,
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      );
+      _cachedFormatterLocale = key;
+    }
+    return _cachedFormatter!;
+  }
+
+  static String get groupSeparator => _locale == 'en' ? ',' : '.';
+
   static String format(num amount) {
-    return _formatterFor(locale).format(amount);
+    return _formatter().format(amount);
   }
 
   /// Format angka **tanpa** simbol mata uang, dengan pemisah ribuan

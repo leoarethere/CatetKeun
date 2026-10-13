@@ -732,4 +732,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sampleSideJobNote => 'Freelance UI design';
+
+  @override
+  String get paymentMethod => 'Money Type';
+
+  @override
+  String get cash => 'Cash Money';
+
+  @override
+  String get digital => 'Digital Money';
+
+  @override
+  String get cashShort => 'Cash';
+
+  @override
+  String get digitalShort => 'Digital';
+
+  @override
+  String get cashBalance => 'Cash Balance';
+
+  @override
+  String get digitalBalance => 'Digital Balance';
+
+  @override
+  String get grandTotalBalance => 'Grand Total';
+
+  @override
+  String get filterAllWallets => 'All Wallets';
 }

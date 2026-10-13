@@ -66,6 +66,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
       body: SafeArea(
         child: ListView(
+          // Physics default per platform agar scroll natural.
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           children: [
             // Period Navigation
@@ -307,22 +308,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           const SizedBox(height: 12),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: TweenAnimationBuilder<double>(
-                              tween: Tween(
-                                begin: 0,
-                                end: stat.percentage / 100.0,
-                              ),
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.easeOutCubic,
-                              builder: (context, value, _) =>
-                                  LinearProgressIndicator(
-                                value: value,
-                                minHeight: 8,
-                                backgroundColor:
-                                    colorScheme.surfaceContainerHighest,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  stat.category.color,
-                                ),
+                            child: LinearProgressIndicator(
+                              value: (stat.percentage / 100.0).clamp(0.0, 1.0),
+                              minHeight: 8,
+                              backgroundColor:
+                                  colorScheme.surfaceContainerHighest,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                stat.category.color,
                               ),
                             ),
                           ),
@@ -349,9 +341,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                CategoryPieChart(
-                  stats: stats,
-                  isExpense: isExpense,
+                // Chart diisolasi repaint agar scroll list tidak me-repaint
+                // chart fl_chart yang mahal setiap frame.
+                RepaintBoundary(
+                  child: CategoryPieChart(
+                    stats: stats,
+                    isExpense: isExpense,
+                  ),
                 ),
                 const SizedBox(height: 28),
               ],
@@ -379,7 +375,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    MonthlyTrendChart(trendData: trend),
+                    RepaintBoundary(
+                      child: MonthlyTrendChart(trendData: trend),
+                    ),
                   ],
                 );
               }),
@@ -586,19 +584,11 @@ class _BudgetMiniCard extends StatelessWidget {
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(
-                begin: 0,
-                end: (progress.percentage / 100).clamp(0.0, 1.0),
-              ),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOutCubic,
-              builder: (context, value, _) => LinearProgressIndicator(
-                value: value,
-                minHeight: 6,
-                backgroundColor: colorScheme.surfaceContainerHighest,
-                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-              ),
+            child: LinearProgressIndicator(
+              value: (progress.percentage / 100).clamp(0.0, 1.0),
+              minHeight: 6,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
             ),
           ),
           const SizedBox(height: 6),

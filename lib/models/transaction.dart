@@ -1,5 +1,10 @@
 import 'category.dart';
 
+enum PaymentMethod {
+  cash,
+  digital;
+}
+
 class Transaction {
   final String id;
   final String title;
@@ -8,6 +13,7 @@ class Transaction {
   final TransactionCategory category;
   final DateTime date;
   final String? note;
+  final PaymentMethod paymentMethod;
 
   const Transaction({
     required this.id,
@@ -17,6 +23,7 @@ class Transaction {
     required this.category,
     required this.date,
     this.note,
+    this.paymentMethod = PaymentMethod.cash,
   });
 
   Transaction copyWith({
@@ -28,6 +35,7 @@ class Transaction {
     DateTime? date,
     String? note,
     bool clearNote = false, // Flag eksplisit untuk mengosongkan note
+    PaymentMethod? paymentMethod,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -37,6 +45,7 @@ class Transaction {
       category: category ?? this.category,
       date: date ?? this.date,
       note: clearNote ? null : (note ?? this.note),
+      paymentMethod: paymentMethod ?? this.paymentMethod,
     );
   }
 
@@ -49,6 +58,7 @@ class Transaction {
       'categoryId': category.id,
       'date': date.toIso8601String(),
       'note': note,
+      'paymentMethod': paymentMethod.name,
     };
   }
 
@@ -71,6 +81,15 @@ class Transaction {
     
     final type = TransactionType.values.byName(json['type'] as String);
 
+    PaymentMethod paymentMethod = PaymentMethod.cash;
+    if (json['paymentMethod'] != null) {
+      try {
+        paymentMethod = PaymentMethod.values.byName(json['paymentMethod'] as String);
+      } catch (_) {
+        paymentMethod = PaymentMethod.cash;
+      }
+    }
+
     return Transaction(
       id: json['id'] as String,
       title: json['title'] as String,
@@ -83,6 +102,7 @@ class Transaction {
       ),
       date: DateTime.parse(json['date'] as String),
       note: json['note'] as String?,
+      paymentMethod: paymentMethod,
     );
   }
 }

@@ -82,6 +82,14 @@ class AppLogo extends StatelessWidget {
               width: size,
               height: size,
               fit: BoxFit.contain,
+              // Decode sekali dalam resolusi kecil: aset asli 1024x1024
+              // (~4MB sebagai tekstur GPU) di-scale + clip anti-alias di
+              // setiap frame saat SliverAppBar di-scroll. 512px sudah
+              // tajam untuk semua ukuran pakai (26/88/112) namun 4x
+              // lebih ringan di memori & paint per frame.
+              cacheWidth: 512,
+              cacheHeight: 512,
+              gaplessPlayback: true,
             ),
           ),
         ),

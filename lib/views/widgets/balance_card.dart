@@ -19,6 +19,10 @@ class BalanceCard extends StatelessWidget {
     final income = provider.currentMonthIncome;
     final expense = provider.currentMonthExpense;
 
+    final cashBalance = provider.currentMonthCashBalance;
+
+    final digitalBalance = provider.currentMonthDigitalBalance;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -48,7 +52,7 @@ class BalanceCard extends StatelessWidget {
           width: 1,
         ),
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -94,8 +98,8 @@ class BalanceCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          // Saldo ber-animasi count-up saat berpindah bulan/data berubah.
+          const SizedBox(height: 6),
+          // Saldo total ber-animasi count-up saat berpindah bulan/data berubah.
           _AnimatedAmount(
             amount: balance,
             color: balance >= 0 ? colorScheme.onSurface : Colors.redAccent,
@@ -104,9 +108,35 @@ class BalanceCard extends StatelessWidget {
               letterSpacing: -0.5,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
+
+          // Tampilan 2 Kategori Uang: Cash vs Digital
+          Row(
+            children: [
+              Expanded(
+                child: _buildWalletCard(
+                  context: context,
+                  title: l10n.cash,
+                  balance: cashBalance,
+                  icon: Icons.payments_rounded,
+                  accentColor: const Color(0xFF2E7D32),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildWalletCard(
+                  context: context,
+                  title: l10n.digital,
+                  balance: digitalBalance,
+                  icon: Icons.account_balance_wallet_rounded,
+                  accentColor: const Color(0xFF1565C0),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
           const Divider(height: 1, thickness: 0.8),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -118,7 +148,7 @@ class BalanceCard extends StatelessWidget {
                 ),
               ),
               Container(
-                height: 40,
+                height: 36,
                 width: 1,
                 color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                 margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -132,6 +162,71 @@ class BalanceCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWalletCard({
+    required BuildContext context,
+    required String title,
+    required int balance,
+    required IconData icon,
+    required Color accentColor,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: colorScheme.surface.withValues(alpha: isDark ? 0.45 : 0.75),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.45),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 14, color: accentColor),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  title,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              CurrencyHelper.format(balance),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: balance >= 0 ? colorScheme.onSurface : Colors.redAccent,
+              ),
+            ),
           ),
         ],
       ),
@@ -191,12 +286,7 @@ class BalanceCard extends StatelessWidget {
   }
 }
 
-/// Teks nominal yang ber-animasi count-up saat nilainya berubah.
-///
-/// Memakai [TweenAnimationBuilder] sehingga saat [amount] berganti (misal
-/// user pindah bulan), angka bergulir mulus dari nilai lama ke baru, bukan
-/// langsung melompat.
-class _AnimatedAmount extends StatelessWidget {
+class _AnimatedAmount extends StatefulWidget {
   final int amount;
   final Color color;
   final TextStyle? style;
@@ -208,15 +298,53 @@ class _AnimatedAmount extends StatelessWidget {
   });
 
   @override
+  State<_AnimatedAmount> createState() => _AnimatedAmountState();
+}
+
+class _AnimatedAmountState extends State<_AnimatedAmount> {
+  late int _previousAmount;
+
+  @override
+  void initState() {
+    super.initState();
+    _previousAmount = widget.amount;
+  }
+
+  @override
+  void didUpdateWidget(_AnimatedAmount oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.amount != widget.amount) {
+      _previousAmount = oldWidget.amount;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_previousAmount == widget.amount) {
+      return Text(
+        CurrencyHelper.format(widget.amount),
+        style: widget.style?.copyWith(color: widget.color),
+      );
+    }
+
     return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: amount.toDouble()),
-      duration: const Duration(milliseconds: 450),
+      tween: Tween<double>(
+        begin: _previousAmount.toDouble(),
+        end: widget.amount.toDouble(),
+      ),
+      duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutCubic,
+      onEnd: () {
+        if (mounted) {
+          setState(() {
+            _previousAmount = widget.amount;
+          });
+        }
+      },
       builder: (context, value, _) {
         return Text(
           CurrencyHelper.format(value.round()),
-          style: style?.copyWith(color: color),
+          style: widget.style?.copyWith(color: widget.color),
         );
       },
     );

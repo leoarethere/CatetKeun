@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../models/transaction.dart';
@@ -27,11 +29,33 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentNavIndex = 0;
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
+  Timer? _searchDebounce;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Ketikan search di-debounce 250ms: tanpa ini, setiap karakter memicu
+  /// notifyListeners → rebuild seluruh MaterialApp (list + filter ulang +
+  /// TextField) sehingga mengetik & interaksi di sekitar scroll terasa berat.
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(
+      const Duration(milliseconds: 250),
+      () => widget.provider.setSearchQuery(value),
+    );
+  }
+
+  void _closeSearch() {
+    _searchDebounce?.cancel();
+    setState(() {
+      _isSearching = false;
+      _searchController.clear();
+      widget.provider.setSearchQuery('');
+    });
   }
 
   void _openAddTransaction(BuildContext context, [Transaction? tx]) {
@@ -105,13 +129,22 @@ class _HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final provider = widget.provider;
+    // Ambil sekali agar getter cache tidak dipanggil berulang per build.
+    final filtered = provider.filteredTransactions;
 
     return CustomScrollView(
+      // Physics default per platform agar scroll terasa natural
+      // (Clamping di Android, Bouncing di iOS).
+      // cacheExtent lebih besar dari default 250 agar tile di luar viewport
+      // di-build lebih awal — fling cepat tidak menemui tile yang belum jadi.
+      // ignore: deprecated_member_use (ScrollCacheExtent belum diekspor publik)
+      cacheExtent: 500,
       slivers: [
         // App Bar Material 3
         SliverAppBar(
-          floating: true,
           pinned: true,
+          floating: false,
+          scrolledUnderElevation: 2,
           title: _isSearching
               ? TextField(
                   controller: _searchController,
@@ -120,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     hintText: l10n.searchHint,
                     border: InputBorder.none,
                   ),
-                  onChanged: provider.setSearchQuery,
+                  onChanged: _onSearchChanged,
                 )
               : Row(
                   children: [
@@ -140,15 +173,11 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded),
               tooltip: _isSearching ? l10n.closeSearchTitle : l10n.searchTitle,
               onPressed: () {
-                setState(() {
-                  if (_isSearching) {
-                    _isSearching = false;
-                    _searchController.clear();
-                    provider.setSearchQuery('');
-                  } else {
-                    _isSearching = true;
-                  }
-                });
+                if (_isSearching) {
+                  _closeSearch();
+                } else {
+                  setState(() => _isSearching = true);
+                }
               },
             ),
             AppOverflowMenu(provider: provider),
@@ -158,39 +187,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
         // Main content
         SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Balance Card
-                BalanceCard(provider: provider),
-                const SizedBox(height: 16),
+          child: RepaintBoundary(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Balance Card
+                  BalanceCard(provider: provider),
+                  const SizedBox(height: 16),
 
-                // Filter Bar
-                FilterBar(provider: provider),
-                const SizedBox(height: 12),
+                  // Filter Bar
+                  FilterBar(provider: provider),
+                  const SizedBox(height: 12),
 
-                // Subheader
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      l10n.transactionHistory,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                  // Subheader
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.transactionHistory,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    Text(
-                      l10n.transactionCount(provider.filteredTransactions.length),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.outline,
+                      Text(
+                        l10n.transactionCount(filtered.length),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.outline,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             ),
           ),
         ),
@@ -201,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
             hasScrollBody: false,
             child: Center(child: CircularProgressIndicator()),
           )
-        else if (provider.filteredTransactions.isEmpty)
+        else if (filtered.isEmpty)
           SliverFillRemaining(
             hasScrollBody: false,
             child: EmptyState(
@@ -216,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           )
         else
-          _buildGroupedTransactionsSliver(context, provider, l10n),
+          _buildGroupedTransactionsSliver(context, provider, l10n, filtered),
 
         // Bottom space so FAB doesn't obscure the last item
         const SliverToBoxAdapter(
@@ -230,75 +261,103 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
     FinanceProvider provider,
     AppLocalizations l10n,
+    List<Transaction> transactions,
   ) {
-    final transactions = provider.filteredTransactions;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Grouping by Date
-    final Map<String, List<Transaction>> grouped = {};
-    for (final tx in transactions) {
-      final headerKey = DateHelper.formatGroupHeader(tx.date);
-      grouped.putIfAbsent(headerKey, () => []).add(tx);
+    // Flatten sekali jalan: satu DateTime.now() untuk semua header
+    // (sebelumnya formatGroupHeader memanggil DateTime.now() + membuat
+    // DateFormat baru per item, 2x per transaksi) dan bandingkan hari
+    // memakai isSameDay agar hemat (tanpa format string ganda).
+    final now = DateTime.now();
+    final List<_GroupItem> flatItems = [];
+    for (int i = 0; i < transactions.length; i++) {
+      final tx = transactions[i];
+      if (i == 0 ||
+          !DateHelper.isSameDay(tx.date, transactions[i - 1].date)) {
+        flatItems.add(
+          _GroupHeaderItem(DateHelper.formatGroupHeader(tx.date, now: now)),
+        );
+      }
+      final isLastInGroup = i == transactions.length - 1 ||
+          !DateHelper.isSameDay(tx.date, transactions[i + 1].date);
+      flatItems.add(_GroupTransactionItem(tx, isLastInGroup: isLastInGroup));
     }
-
-    final groupKeys = grouped.keys.toList();
 
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
-          (context, groupIndex) {
-            final groupTitle = groupKeys[groupIndex];
-            final items = grouped[groupTitle]!;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Group header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-                    child: Text(
-                      groupTitle,
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+          (context, index) {
+            final item = flatItems[index];
+            if (item is _GroupHeaderItem) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                child: Text(
+                  item.title,
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
                   ),
-                  // Items in this group
-                  ...items.map((tx) {
-                    return TransactionItemTile(
-                      transaction: tx,
-                      onTap: () => _openAddTransaction(context, tx),
-                      onDelete: () {
-                        final deletedTx = tx;
-                        provider.deleteTransaction(tx.id);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              l10n.transactionDeleted(deletedTx.title),
-                            ),
-                            action: SnackBarAction(
-                              label: l10n.undo,
-                              onPressed: () {
-                                provider.addTransaction(deletedTx);
-                              },
-                            ),
-                          ),
-                        );
-                      },
+                ),
+              );
+            } else if (item is _GroupTransactionItem) {
+              final tx = item.transaction;
+              return Padding(
+                // RepaintBoundary otomatis dari delegate sudah cukup;
+                // hindari RepaintBoundary ganda per item yang menambah
+                // layer GPU dan memori saat scroll.
+                padding: EdgeInsets.only(bottom: item.isLastInGroup ? 12 : 0),
+                child: TransactionItemTile(
+                  // Key stabil agar Flutter me-reuse element saat scroll,
+                  // mengurangi rebuild tile yang keluar-masuk viewport.
+                  key: ValueKey(tx.id),
+                  transaction: tx,
+                  onTap: () => _openAddTransaction(context, tx),
+                  onDelete: () {
+                    final deletedTx = tx;
+                    provider.deleteTransaction(tx.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          l10n.transactionDeleted(deletedTx.title),
+                        ),
+                        action: SnackBarAction(
+                          label: l10n.undo,
+                          onPressed: () {
+                            provider.addTransaction(deletedTx);
+                          },
+                        ),
+                      ),
                     );
-                  }),
-                ],
-              ),
-            );
+                  },
+                ),
+              );
+            }
+            return const SizedBox.shrink();
           },
-          childCount: groupKeys.length,
+          childCount: flatItems.length,
+          // Daftar transaksi tidak perlu keep-alive per item; menonaktifkan
+          // keep-alive mengurangi memori & kerja GC saat scroll panjang.
+          addAutomaticKeepAlives: false,
         ),
       ),
     );
   }
+}
+
+sealed class _GroupItem {
+  const _GroupItem();
+}
+
+class _GroupHeaderItem extends _GroupItem {
+  final String title;
+  const _GroupHeaderItem(this.title);
+}
+
+class _GroupTransactionItem extends _GroupItem {
+  final Transaction transaction;
+  final bool isLastInGroup;
+  const _GroupTransactionItem(this.transaction, {this.isLastInGroup = false});
 }

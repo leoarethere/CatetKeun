@@ -39,6 +39,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
             centerTitle: true,
           ),
           body: ListView(
+            // Physics default per platform agar scroll natural.
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             children: [
               // Info
@@ -387,16 +388,11 @@ class _BudgetCard extends StatelessWidget {
         const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: (p.percentage / 100).clamp(0.0, 1.0)),
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) => LinearProgressIndicator(
-              value: value,
-              minHeight: 8,
-              backgroundColor: colorScheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-            ),
+          child: LinearProgressIndicator(
+            value: (p.percentage / 100).clamp(0.0, 1.0),
+            minHeight: 8,
+            backgroundColor: colorScheme.surfaceContainerHighest,
+            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
           ),
         ),
         if (p.status == BudgetStatus.over) ...[

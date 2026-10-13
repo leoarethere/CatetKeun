@@ -735,4 +735,31 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get sampleSideJobNote => 'Desain UI freelance';
+
+  @override
+  String get paymentMethod => 'Jenis Uang';
+
+  @override
+  String get cash => 'Uang Cash';
+
+  @override
+  String get digital => 'Uang Digital';
+
+  @override
+  String get cashShort => 'Cash';
+
+  @override
+  String get digitalShort => 'Digital';
+
+  @override
+  String get cashBalance => 'Saldo Cash';
+
+  @override
+  String get digitalBalance => 'Saldo Digital';
+
+  @override
+  String get grandTotalBalance => 'Total Keseluruhan';
+
+  @override
+  String get filterAllWallets => 'Semua Saldo';
 }

@@ -26,6 +26,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late TransactionType _selectedType;
+  late PaymentMethod _selectedPaymentMethod;
   late TextEditingController _titleController;
   late TextEditingController _amountController;
   late TextEditingController _noteController;
@@ -42,6 +43,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
 
     if (initial != null) {
       _selectedType = initial.type;
+      _selectedPaymentMethod = initial.paymentMethod;
       _titleController = TextEditingController(text: initial.title);
       _amountController = TextEditingController(
         text: CurrencyHelper.formatNumber(initial.amount),
@@ -61,6 +63,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
       }
     } else {
       _selectedType = TransactionType.expense;
+      _selectedPaymentMethod = PaymentMethod.cash;
       _titleController = TextEditingController();
       _amountController = TextEditingController();
       _noteController = TextEditingController();
@@ -135,6 +138,7 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
       category: _selectedCategory,
       date: _selectedDate,
       note: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      paymentMethod: _selectedPaymentMethod,
     );
 
     if (isEditing) {
@@ -224,6 +228,45 @@ class _AddEditTransactionScreenState extends State<AddEditTransactionScreen> {
                   selectedForegroundColor: _selectedType == TransactionType.expense
                       ? Colors.redAccent
                       : Colors.teal,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Segmented Button Jenis Uang (Cash / Digital)
+              Text(
+                l10n.paymentMethod,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              SegmentedButton<PaymentMethod>(
+                segments: [
+                  ButtonSegment<PaymentMethod>(
+                    value: PaymentMethod.cash,
+                    label: Text(l10n.cash),
+                    icon: const Icon(Icons.payments_rounded),
+                  ),
+                  ButtonSegment<PaymentMethod>(
+                    value: PaymentMethod.digital,
+                    label: Text(l10n.digital),
+                    icon: const Icon(Icons.account_balance_wallet_rounded),
+                  ),
+                ],
+                selected: {_selectedPaymentMethod},
+                onSelectionChanged: (newSelection) {
+                  setState(() {
+                    _selectedPaymentMethod = newSelection.first;
+                  });
+                },
+                style: SegmentedButton.styleFrom(
+                  selectedBackgroundColor: _selectedPaymentMethod == PaymentMethod.cash
+                      ? const Color(0xFF2E7D32).withValues(alpha: 0.15)
+                      : const Color(0xFF1565C0).withValues(alpha: 0.15),
+                  selectedForegroundColor: _selectedPaymentMethod == PaymentMethod.cash
+                      ? const Color(0xFF2E7D32)
+                      : const Color(0xFF1565C0),
                 ),
               ),
               const SizedBox(height: 24),

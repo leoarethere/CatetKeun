@@ -1369,6 +1369,60 @@ abstract class AppLocalizations {
   /// In id, this message translates to:
   /// **'Desain UI freelance'**
   String get sampleSideJobNote;
+
+  /// No description provided for @paymentMethod.
+  ///
+  /// In id, this message translates to:
+  /// **'Jenis Uang'**
+  String get paymentMethod;
+
+  /// No description provided for @cash.
+  ///
+  /// In id, this message translates to:
+  /// **'Uang Cash'**
+  String get cash;
+
+  /// No description provided for @digital.
+  ///
+  /// In id, this message translates to:
+  /// **'Uang Digital'**
+  String get digital;
+
+  /// No description provided for @cashShort.
+  ///
+  /// In id, this message translates to:
+  /// **'Cash'**
+  String get cashShort;
+
+  /// No description provided for @digitalShort.
+  ///
+  /// In id, this message translates to:
+  /// **'Digital'**
+  String get digitalShort;
+
+  /// No description provided for @cashBalance.
+  ///
+  /// In id, this message translates to:
+  /// **'Saldo Cash'**
+  String get cashBalance;
+
+  /// No description provided for @digitalBalance.
+  ///
+  /// In id, this message translates to:
+  /// **'Saldo Digital'**
+  String get digitalBalance;
+
+  /// No description provided for @grandTotalBalance.
+  ///
+  /// In id, this message translates to:
+  /// **'Total Keseluruhan'**
+  String get grandTotalBalance;
+
+  /// No description provided for @filterAllWallets.
+  ///
+  /// In id, this message translates to:
+  /// **'Semua Saldo'**
+  String get filterAllWallets;
 }
 
 class _AppLocalizationsDelegate

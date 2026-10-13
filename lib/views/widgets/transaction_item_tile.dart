@@ -117,6 +117,43 @@ class TransactionItemTile extends StatelessWidget {
                       const SizedBox(height: 3),
                       Row(
                         children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                              color: transaction.paymentMethod == PaymentMethod.cash
+                                  ? const Color(0xFF2E7D32).withValues(alpha: 0.12)
+                                  : const Color(0xFF1565C0).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  transaction.paymentMethod == PaymentMethod.cash
+                                      ? Icons.payments_rounded
+                                      : Icons.account_balance_wallet_rounded,
+                                  size: 10,
+                                  color: transaction.paymentMethod == PaymentMethod.cash
+                                      ? const Color(0xFF2E7D32)
+                                      : const Color(0xFF1565C0),
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  transaction.paymentMethod == PaymentMethod.cash
+                                      ? l10n.cashShort
+                                      : l10n.digitalShort,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: transaction.paymentMethod == PaymentMethod.cash
+                                        ? const Color(0xFF2E7D32)
+                                        : const Color(0xFF1565C0),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           Flexible(
                             child: Text(
                               transaction.category.localized(context),

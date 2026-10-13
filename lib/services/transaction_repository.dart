@@ -127,6 +127,7 @@ class TransactionRepository {
         category: TransactionCategory.getById('inc_salary'),
         date: DateTime(now.year, now.month, now.day - 3, 9, 0),
         note: 'Transfer gaji kantor',
+        paymentMethod: PaymentMethod.digital,
       ),
       Transaction(
         id: 'sample_2',
@@ -136,6 +137,7 @@ class TransactionRepository {
         category: TransactionCategory.getById('exp_shopping'),
         date: DateTime(now.year, now.month, now.day - 2, 14, 30),
         note: 'Supermarket',
+        paymentMethod: PaymentMethod.cash,
       ),
       Transaction(
         id: 'sample_3',
@@ -145,6 +147,7 @@ class TransactionRepository {
         category: TransactionCategory.getById('exp_transport'),
         date: DateTime(now.year, now.month, now.day - 1, 8, 15),
         note: 'Isi Pertamax',
+        paymentMethod: PaymentMethod.digital,
       ),
       Transaction(
         id: 'sample_4',
@@ -154,6 +157,7 @@ class TransactionRepository {
         category: TransactionCategory.getById('exp_food'),
         date: DateTime(now.year, now.month, now.day, 12, 45),
         note: 'Kafe dekat kantor',
+        paymentMethod: PaymentMethod.cash,
       ),
       Transaction(
         id: 'sample_5',
@@ -163,6 +167,7 @@ class TransactionRepository {
         category: TransactionCategory.getById('inc_business'),
         date: DateTime(now.year, now.month, now.day, 15, 0),
         note: 'Desain UI freelance',
+        paymentMethod: PaymentMethod.digital,
       ),
     ];
   }

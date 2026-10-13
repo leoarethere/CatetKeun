@@ -54,6 +54,10 @@ class CatetKeunApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           themeMode: provider.themeMode,
+          // ScrollBehavior default per platform (Clamping di Android,
+          // Bouncing di iOS) — jangan paksa AlwaysScrollableScrollPhysics
+          // secara global karena membuat scroll terasa kaku dan selalu
+          // overscroll walau konten tidak overflow.
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(

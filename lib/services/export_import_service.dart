@@ -174,7 +174,7 @@ class ExportImportService {
     final buffer = StringBuffer();
 
     // Header CSV
-    buffer.writeln('ID,Judul,Nominal,Tipe,Kategori,Tanggal,Catatan');
+    buffer.writeln('ID,Judul,Nominal,Tipe,Kategori,Tanggal,Catatan,Metode');
 
     // Data rows
     for (final tx in transactions) {
@@ -186,6 +186,7 @@ class ExportImportService {
         _escapeCsv(tx.category.name),
         tx.date.toIso8601String(),
         _escapeCsv(tx.note ?? ''),
+        tx.paymentMethod.name,
       ];
       buffer.writeln(row.join(','));
     }
@@ -649,6 +650,13 @@ class ExportImportService {
     final categoryName = columns[4];
     final dateStr = columns[5];
     final note = columns[6].isEmpty ? null : columns[6];
+    PaymentMethod paymentMethod = PaymentMethod.cash;
+    if (columns.length >= 8) {
+      final methodStr = columns[7].trim().toLowerCase();
+      if (methodStr == 'digital' || methodStr == 'uang digital') {
+        paymentMethod = PaymentMethod.digital;
+      }
+    }
 
     if (amount == null || title.isEmpty) return null;
 
@@ -676,6 +684,7 @@ class ExportImportService {
       category: category,
       date: DateTime.parse(dateStr),
       note: note,
+      paymentMethod: paymentMethod,
     );
   }
 

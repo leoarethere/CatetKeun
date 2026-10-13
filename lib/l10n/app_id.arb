@@ -433,5 +433,15 @@
   "sampleLunchTitle": "Makan Siang & Kopi",
   "sampleLunchNote": "Kafe dekat kantor",
   "sampleSideJobTitle": "Project Sampingan",
-  "sampleSideJobNote": "Desain UI freelance"
+  "sampleSideJobNote": "Desain UI freelance",
+
+  "paymentMethod": "Jenis Uang",
+  "cash": "Uang Cash",
+  "digital": "Uang Digital",
+  "cashShort": "Cash",
+  "digitalShort": "Digital",
+  "cashBalance": "Saldo Cash",
+  "digitalBalance": "Saldo Digital",
+  "grandTotalBalance": "Total Keseluruhan",
+  "filterAllWallets": "Semua Saldo"
 }

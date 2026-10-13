@@ -433,5 +433,15 @@
   "sampleLunchTitle": "Lunch & Coffee",
   "sampleLunchNote": "Cafe near the office",
   "sampleSideJobTitle": "Side Project",
-  "sampleSideJobNote": "Freelance UI design"
+  "sampleSideJobNote": "Freelance UI design",
+
+  "paymentMethod": "Money Type",
+  "cash": "Cash Money",
+  "digital": "Digital Money",
+  "cashShort": "Cash",
+  "digitalShort": "Digital",
+  "cashBalance": "Cash Balance",
+  "digitalBalance": "Digital Balance",
+  "grandTotalBalance": "Grand Total",
+  "filterAllWallets": "All Wallets"
 }

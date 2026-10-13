@@ -52,15 +52,77 @@ class FinanceProvider extends ChangeNotifier {
   bool _isLoading = true;
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   TransactionType? _selectedTypeFilter;
+  PaymentMethod? _selectedPaymentMethodFilter;
   String _searchQuery = '';
   ThemeMode _themeMode = ThemeMode.light;
   Locale _locale = const Locale('id');
+
+  // Cache untuk optimasi performa rendering dan scroll
+  List<Transaction>? _cachedCurrentMonthTransactions;
+  List<Transaction>? _cachedFilteredTransactions;
+  int? _cachedCurrentMonthIncome;
+  int? _cachedCurrentMonthExpense;
+  int? _cachedCurrentMonthCashIncome;
+  int? _cachedCurrentMonthCashExpense;
+  int? _cachedCurrentMonthDigitalIncome;
+  int? _cachedCurrentMonthDigitalExpense;
+  int? _cachedTotalBalance;
+
+  void _invalidateTransactionCache() {
+    _cachedCurrentMonthTransactions = null;
+    _cachedFilteredTransactions = null;
+    _cachedCurrentMonthIncome = null;
+    _cachedCurrentMonthExpense = null;
+    _cachedCurrentMonthCashIncome = null;
+    _cachedCurrentMonthCashExpense = null;
+    _cachedCurrentMonthDigitalIncome = null;
+    _cachedCurrentMonthDigitalExpense = null;
+    _cachedTotalBalance = null;
+  }
+
+  void _ensureMonthTotalsCached() {
+    if (_cachedCurrentMonthIncome != null) return;
+    int inc = 0;
+    int exp = 0;
+    int cashInc = 0;
+    int cashExp = 0;
+    int digInc = 0;
+    int digExp = 0;
+
+    for (final t in currentMonthTransactions) {
+      final isInc = t.type == TransactionType.income;
+      final isCash = t.paymentMethod == PaymentMethod.cash;
+      if (isInc) {
+        inc += t.amount;
+        if (isCash) {
+          cashInc += t.amount;
+        } else {
+          digInc += t.amount;
+        }
+      } else {
+        exp += t.amount;
+        if (isCash) {
+          cashExp += t.amount;
+        } else {
+          digExp += t.amount;
+        }
+      }
+    }
+
+    _cachedCurrentMonthIncome = inc;
+    _cachedCurrentMonthExpense = exp;
+    _cachedCurrentMonthCashIncome = cashInc;
+    _cachedCurrentMonthCashExpense = cashExp;
+    _cachedCurrentMonthDigitalIncome = digInc;
+    _cachedCurrentMonthDigitalExpense = digExp;
+  }
 
   bool get isLoading => _isLoading;
   ThemeMode get themeMode => _themeMode;
   Locale get locale => _locale;
   DateTime get selectedMonth => _selectedMonth;
   TransactionType? get selectedTypeFilter => _selectedTypeFilter;
+  PaymentMethod? get selectedPaymentMethodFilter => _selectedPaymentMethodFilter;
   String get searchQuery => _searchQuery;
   List<Transaction> get allTransactions => _transactions;
   List<TransactionCategory> get customCategories => _customCategories;
@@ -86,6 +148,8 @@ class FinanceProvider extends ChangeNotifier {
     _transactions = results[0] as List<Transaction>;
     _budgets = results[1] as List<Budget>;
 
+    _invalidateTransactionCache();
+
     // Data contoh (sample) ditulis dalam bahasa Indonesia oleh repository.
     // Lokalisasi sesuai bahasa aktif - hanya berlaku saat user belum
     // punya data sendiri.
@@ -110,6 +174,7 @@ class FinanceProvider extends ChangeNotifier {
 
     _transactions = results[0] as List<Transaction>;
     _budgets = results[1] as List<Budget>;
+    _invalidateTransactionCache();
     notifyListeners();
   }
 
@@ -229,76 +294,154 @@ class FinanceProvider extends ChangeNotifier {
 
   void setSelectedMonth(DateTime month) {
     _selectedMonth = DateTime(month.year, month.month);
+    _invalidateTransactionCache();
     notifyListeners();
   }
 
   void previousMonth() {
     _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+    _invalidateTransactionCache();
     notifyListeners();
   }
 
   void nextMonth() {
     _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+    _invalidateTransactionCache();
     notifyListeners();
   }
 
   void setTypeFilter(TransactionType? type) {
+    if (_selectedTypeFilter == type) return;
     _selectedTypeFilter = type;
+    _cachedFilteredTransactions = null;
+    notifyListeners();
+  }
+
+  void setPaymentMethodFilter(PaymentMethod? method) {
+    if (_selectedPaymentMethodFilter == method) return;
+    _selectedPaymentMethodFilter = method;
+    _cachedFilteredTransactions = null;
     notifyListeners();
   }
 
   void setSearchQuery(String query) {
-    _searchQuery = query.trim();
+    final q = query.trim();
+    // Guard: tiap ketikan memanggil ini; tanpa guard, query yang sama
+    // memicu rebuild seluruh MaterialApp secara cuma-cuma.
+    if (_searchQuery == q) return;
+    _searchQuery = q;
+    _cachedFilteredTransactions = null;
     notifyListeners();
   }
 
   // Daftar transaksi bulan terpilih
   List<Transaction> get currentMonthTransactions {
-    return _transactions.where((t) {
+    return _cachedCurrentMonthTransactions ??= _transactions.where((t) {
       return DateHelper.isSameMonth(t.date, _selectedMonth);
     }).toList();
   }
 
   // Transaksi yang difilter untuk ditampilkan di list
   List<Transaction> get filteredTransactions {
+    if (_cachedFilteredTransactions != null) {
+      return _cachedFilteredTransactions!;
+    }
+    // Hoist ke luar loop: sebelumnya toLowerCase() dipanggil per
+    // transaksi per rebuild.
+    final queryLower = _searchQuery.toLowerCase();
     final list = currentMonthTransactions.where((t) {
       final matchesType = _selectedTypeFilter == null || t.type == _selectedTypeFilter;
-      final matchesQuery = _searchQuery.isEmpty ||
-          t.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-          (t.note?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false) ||
-          t.category.name.toLowerCase().contains(_searchQuery.toLowerCase());
-      return matchesType && matchesQuery;
+      final matchesMethod =
+          _selectedPaymentMethodFilter == null || t.paymentMethod == _selectedPaymentMethodFilter;
+      final matchesQuery = queryLower.isEmpty ||
+          t.title.toLowerCase().contains(queryLower) ||
+          (t.note?.toLowerCase().contains(queryLower) ?? false) ||
+          t.category.name.toLowerCase().contains(queryLower);
+      return matchesType && matchesMethod && matchesQuery;
     }).toList();
 
     // Urutkan dari yang paling baru
     list.sort((a, b) => b.date.compareTo(a.date));
-    return list;
+    return _cachedFilteredTransactions = list;
   }
 
-  // Total Pemasukan bulan ini
+  // Total Pemasukan bulan ini (Semua jenis uang)
   int get currentMonthIncome {
-    return currentMonthTransactions
-        .where((t) => t.type == TransactionType.income)
-        .fold(0, (sum, t) => sum + t.amount);
+    _ensureMonthTotalsCached();
+    return _cachedCurrentMonthIncome!;
   }
 
-  // Total Pengeluaran bulan ini
+  // Total Pengeluaran bulan ini (Semua jenis uang)
   int get currentMonthExpense {
-    return currentMonthTransactions
-        .where((t) => t.type == TransactionType.expense)
-        .fold(0, (sum, t) => sum + t.amount);
+    _ensureMonthTotalsCached();
+    return _cachedCurrentMonthExpense!;
   }
 
-  // Saldo bersih bulan ini
+  // Saldo bersih bulan ini (Semua jenis uang)
   int get currentMonthBalance => currentMonthIncome - currentMonthExpense;
 
-  // Total saldo keseluruhan sepanjang waktu
+  // Total saldo keseluruhan sepanjang waktu (Semua jenis uang).
+  //
+  // Single-pass + cache: sebelumnya 4 pass O(n) (where+fold x2) yang
+  // dihitung ulang di setiap build BalanceCard, sehingga bebannya
+  // tumbuh linear bersama jumlah data di tiap rebuild seluruh app.
   int get totalBalance {
+    if (_cachedTotalBalance != null) return _cachedTotalBalance!;
+    int balance = 0;
+    for (final t in _transactions) {
+      if (t.type == TransactionType.income) {
+        balance += t.amount;
+      } else {
+        balance -= t.amount;
+      }
+    }
+    return _cachedTotalBalance = balance;
+  }
+
+  // ==================== CASH (UANG CASH / TUNAI) ====================
+
+  int get currentMonthCashIncome {
+    _ensureMonthTotalsCached();
+    return _cachedCurrentMonthCashIncome!;
+  }
+
+  int get currentMonthCashExpense {
+    _ensureMonthTotalsCached();
+    return _cachedCurrentMonthCashExpense!;
+  }
+
+  int get currentMonthCashBalance => currentMonthCashIncome - currentMonthCashExpense;
+
+  int get totalCashBalance {
     final totalInc = _transactions
-        .where((t) => t.type == TransactionType.income)
+        .where((t) => t.paymentMethod == PaymentMethod.cash && t.type == TransactionType.income)
         .fold(0, (sum, t) => sum + t.amount);
     final totalExp = _transactions
-        .where((t) => t.type == TransactionType.expense)
+        .where((t) => t.paymentMethod == PaymentMethod.cash && t.type == TransactionType.expense)
+        .fold(0, (sum, t) => sum + t.amount);
+    return totalInc - totalExp;
+  }
+
+  // ==================== DIGITAL (UANG DIGITAL) ====================
+
+  int get currentMonthDigitalIncome {
+    _ensureMonthTotalsCached();
+    return _cachedCurrentMonthDigitalIncome!;
+  }
+
+  int get currentMonthDigitalExpense {
+    _ensureMonthTotalsCached();
+    return _cachedCurrentMonthDigitalExpense!;
+  }
+
+  int get currentMonthDigitalBalance => currentMonthDigitalIncome - currentMonthDigitalExpense;
+
+  int get totalDigitalBalance {
+    final totalInc = _transactions
+        .where((t) => t.paymentMethod == PaymentMethod.digital && t.type == TransactionType.income)
+        .fold(0, (sum, t) => sum + t.amount);
+    final totalExp = _transactions
+        .where((t) => t.paymentMethod == PaymentMethod.digital && t.type == TransactionType.expense)
         .fold(0, (sum, t) => sum + t.amount);
     return totalInc - totalExp;
   }
@@ -463,6 +606,7 @@ class FinanceProvider extends ChangeNotifier {
       }
 
       if (hasChanges) {
+        _invalidateTransactionCache();
         await _repository.saveTransactions(_transactions);
       }
 
@@ -636,6 +780,7 @@ class FinanceProvider extends ChangeNotifier {
   // Aksi CRUD
   Future<void> addTransaction(Transaction tx) async {
     _transactions.insert(0, tx);
+    _invalidateTransactionCache();
     await _repository.saveTransactions(_transactions);
     notifyListeners();
   }
@@ -644,6 +789,7 @@ class FinanceProvider extends ChangeNotifier {
     final index = _transactions.indexWhere((t) => t.id == tx.id);
     if (index != -1) {
       _transactions[index] = tx;
+      _invalidateTransactionCache();
       await _repository.saveTransactions(_transactions);
       notifyListeners();
     }
@@ -651,6 +797,7 @@ class FinanceProvider extends ChangeNotifier {
 
   Future<void> deleteTransaction(String id) async {
     _transactions.removeWhere((t) => t.id == id);
+    _invalidateTransactionCache();
     await _repository.saveTransactions(_transactions);
     notifyListeners();
   }

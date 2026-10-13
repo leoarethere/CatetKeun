@@ -59,7 +59,7 @@ class FilterBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        // Filter Type (Semua / Pemasukan / Pengeluaran)
+        // Filter Tipe Transaksi (Semua / Pemasukan / Pengeluaran)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
